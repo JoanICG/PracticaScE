@@ -7,7 +7,7 @@ import RegisterPage from './pages/RegisterPage';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import AdminRoute from './components/layout/AdminRoute';
 import UsersPage from './pages/admin/UsersPage';
-import OrdersAdminPage from './pages/admin/OrdersPage';
+import OrdersAdminPage from './pages/admin/OrdersAdminPage';
 import ProductsPage from './pages/ProductsPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';

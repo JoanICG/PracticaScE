@@ -1,185 +1,286 @@
+import { useState } from 'react';
 import { 
   AppBar, 
+  Box, 
   Toolbar, 
   Typography, 
-  Box, 
   Button, 
-  Container,
-  IconButton,
-  Menu,
-  MenuItem
+  IconButton, 
+  Menu, 
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Badge,
+  Avatar,
+  Divider,
+  Tooltip
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import LogoutIcon from '@mui/icons-material/Logout';
+import PeopleIcon from '@mui/icons-material/People';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import LogoutButton from './LogoutButton';
 
 const Header = () => {
-  const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  
+  // Estados para controlar los menús desplegables
   const [anchorElNav, setAnchorElNav] = useState(null);
-
+  const [anchorElUser, setAnchorElUser] = useState(null);
+  
+  // Abrir/cerrar menú de navegación (móvil)
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
   };
-
+  
+  // Abrir/cerrar menú de usuario
+  const handleOpenUserMenu = (event) => {
+    setAnchorElUser(event.currentTarget);
+  };
+  
+  // Cerrar menú de navegación
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
   };
-
-  // Páginas accesibles solo para administradores
-  const adminPages = [
-    { title: 'Usuarios', path: '/admin/users' },
-    { title: 'Pedidos', path: '/admin/orders' },
-  ];
-
-  // Páginas accesibles solo cuando estás autenticado como cliente
-  const customerPages = [
-    { title: 'Productos', path: '/' },
-    { title: 'Mis Pedidos', path: '/orders' },
-    { title: 'Carrito', path: '/cart' },
-  ];
-
-  // Páginas públicas
-  const publicPages = [
-    { title: 'Login', path: '/login' },
-    { title: 'Registro', path: '/register' },
-  ];
-
-  // Páginas a mostrar según estado de autenticación y rol
-  let pages = publicPages;
-  if (isAuthenticated) {
-    pages = user?.role === 'admin' ? [...adminPages, ...customerPages] : customerPages;
-  }
+  
+  // Cerrar menú de usuario
+  const handleCloseUserMenu = () => {
+    setAnchorElUser(null);
+  };
+  
+  // Navegar a una ruta y cerrar menús
+  const handleMenuClick = (route) => {
+    navigate(route);
+    handleCloseNavMenu();
+    handleCloseUserMenu();
+  };
+  
+  // Función para manejar el logout
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+    handleCloseUserMenu();
+  };
 
   return (
     <AppBar position="static">
-      <Container maxWidth="xl">
-        <Toolbar disableGutters>
-          {/* Logo - Versión escritorio */}
-          <ShoppingCartIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
-          <Typography
-            variant="h6"
-            noWrap
-            component={RouterLink}
-            to="/"
+      <Toolbar>
+        {/* Logo/Título (visible en todos los tamaños) */}
+        <Typography
+          variant="h6"
+          component="div"
+          sx={{ 
+            display: { xs: 'none', sm: 'block' },
+            fontWeight: 'bold',
+            cursor: 'pointer'
+          }}
+          onClick={() => navigate('/')}
+        >
+          RC Cars Shop
+        </Typography>
+
+        {/* Menú hamburguesa (móvil) */}
+        <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+          <IconButton
+            size="large"
+            aria-label="menú de navegación"
+            aria-controls="menu-appbar"
+            aria-haspopup="true"
+            onClick={handleOpenNavMenu}
+            color="inherit"
+          >
+            <MenuIcon />
+          </IconButton>
+          <Menu
+            id="menu-appbar"
+            anchorEl={anchorElNav}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'left',
+            }}
+            keepMounted
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'left',
+            }}
+            open={Boolean(anchorElNav)}
+            onClose={handleCloseNavMenu}
             sx={{
-              mr: 2,
-              display: { xs: 'none', md: 'flex' },
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              color: 'inherit',
-              textDecoration: 'none',
+              display: { xs: 'block', md: 'none' },
             }}
           >
-            TIENDA
-          </Typography>
+            <MenuItem onClick={() => handleMenuClick('/')}>
+              <Typography textAlign="center">Productos</Typography>
+            </MenuItem>
+            
+            {user && (
+              <MenuItem onClick={() => handleMenuClick('/orders')}>
+                <Typography textAlign="center">Mis Pedidos</Typography>
+              </MenuItem>
+            )}
+            
+            {user && user.role === 'admin' ? [
+              <MenuItem key="users" onClick={() => handleMenuClick('/admin/users')}>
+                <Typography textAlign="center">Gestionar Usuarios</Typography>
+              </MenuItem>,
+              <MenuItem key="orders" onClick={() => handleMenuClick('/admin/orders')}>
+                <Typography textAlign="center">Gestionar Pedidos</Typography>
+              </MenuItem>
+            ] : null}
+          </Menu>
+        </Box>
 
-          {/* Menú móvil */}
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-            <IconButton
-              size="large"
-              aria-label="navegación"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleOpenNavMenu}
-              color="inherit"
-            >
-              <MenuIcon />
-            </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-              }}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
-              sx={{
-                display: { xs: 'block', md: 'none' },
-              }}
-            >
-              {pages.map((page) => (
-                <MenuItem 
-                  key={page.title} 
-                  onClick={handleCloseNavMenu}
-                  component={RouterLink}
-                  to={page.path}
-                >
-                  <Typography textAlign="center">{page.title}</Typography>
-                </MenuItem>
-              ))}
-            </Menu>
-          </Box>
+        {/* Logo (versión móvil) */}
+        <Typography
+          variant="h6"
+          component="div"
+          sx={{ 
+            flexGrow: 1,
+            display: { xs: 'flex', sm: 'none' },
+            fontWeight: 'bold',
+            cursor: 'pointer'
+          }}
+          onClick={() => navigate('/')}
+        >
+          RC Cars
+        </Typography>
 
-          {/* Logo - Versión móvil */}
-          <ShoppingCartIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
-          <Typography
-            variant="h5"
-            noWrap
-            component={RouterLink}
-            to="/"
-            sx={{
-              mr: 2,
-              display: { xs: 'flex', md: 'none' },
-              flexGrow: 1,
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              color: 'inherit',
-              textDecoration: 'none',
-            }}
+        {/* Enlaces de navegación (escritorio) */}
+        <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+          <Button
+            onClick={() => handleMenuClick('/')}
+            sx={{ my: 2, color: 'white', display: 'block' }}
           >
-            TIENDA
-          </Typography>
-
-          {/* Navegación - Versión escritorio */}
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {pages.map((page) => (
+            Productos
+          </Button>
+          
+          {user && (
+            <Button
+              onClick={() => handleMenuClick('/orders')}
+              sx={{ my: 2, color: 'white', display: 'block' }}
+            >
+              Mis Pedidos
+            </Button>
+          )}
+          
+          {user && user.role === 'admin' && (
+            <>
               <Button
-                key={page.title}
-                component={RouterLink}
-                to={page.path}
-                onClick={handleCloseNavMenu}
+                onClick={() => handleMenuClick('/admin/users')}
                 sx={{ my: 2, color: 'white', display: 'block' }}
               >
-                {page.title}
+                Gestionar Usuarios
               </Button>
-            ))}
-          </Box>
-
-          {/* Sección derecha */}
-          <Box sx={{ flexGrow: 0 }}>
-            {isAuthenticated ? (
-              <>
-                <Typography 
-                  variant="body1" 
-                  sx={{ display: { xs: 'none', sm: 'inline' }, mr: 2 }}
-                >
-                  Hola, {user?.name}
-                </Typography>
-                <LogoutButton />
-              </>
-            ) : (
-              <Button 
-                color="inherit" 
-                component={RouterLink} 
-                to="/login"
+              <Button
+                onClick={() => handleMenuClick('/admin/orders')}
+                sx={{ my: 2, color: 'white', display: 'block' }}
               >
-                Iniciar Sesión
+                Gestionar Pedidos
               </Button>
-            )}
+            </>
+          )}
+        </Box>
+
+        {/* Carrito (si el usuario está autenticado) */}
+        {user && (
+          <Box sx={{ display: 'flex', mr: 2 }}>
+            <Tooltip title="Ver carrito">
+              <IconButton 
+                onClick={() => navigate('/cart')} 
+                color="inherit"
+                size="large"
+              >
+                <Badge color="secondary" badgeContent={0}>
+                  <ShoppingCartIcon />
+                </Badge>
+              </IconButton>
+            </Tooltip>
           </Box>
-        </Toolbar>
-      </Container>
+        )}
+
+        {/* Menú de usuario */}
+        <Box sx={{ flexGrow: 0 }}>
+          {user ? (
+            // Usuario autenticado
+            <>
+              <Tooltip title="Abrir menú">
+                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                  <Avatar sx={{ bgcolor: 'secondary.main' }}>
+                    {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                  </Avatar>
+                </IconButton>
+              </Tooltip>
+              <Menu
+                sx={{ mt: '45px' }}
+                id="menu-appbar"
+                anchorEl={anchorElUser}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                open={Boolean(anchorElUser)}
+                onClose={handleCloseUserMenu}
+              >
+                <MenuItem disabled>
+                  <Typography textAlign="center">
+                    Hola, {user.name}
+                  </Typography>
+                </MenuItem>
+                <Divider />
+                
+                <MenuItem onClick={() => handleMenuClick('/orders')}>
+                  <ListItemIcon>
+                    <ReceiptIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Mis Pedidos</ListItemText>
+                </MenuItem>
+                
+                {user.role === 'admin' ? [
+                  <MenuItem key="admin-users" onClick={() => handleMenuClick('/admin/users')}>
+                    <ListItemIcon>
+                      <PeopleIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Gestionar Usuarios</ListItemText>
+                  </MenuItem>,
+                  <MenuItem key="admin-orders" onClick={() => handleMenuClick('/admin/orders')}>
+                    <ListItemIcon>
+                      <ShoppingBagIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Gestionar Pedidos</ListItemText>
+                  </MenuItem>
+                ] : null}
+                
+                <Divider />
+                <MenuItem onClick={handleLogout}>
+                  <ListItemIcon>
+                    <LogoutIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Cerrar sesión</ListItemText>
+                </MenuItem>
+              </Menu>
+            </>
+          ) : (
+            // Usuario no autenticado
+            <Button 
+              color="inherit"
+              startIcon={<AccountCircleIcon />}
+              onClick={() => navigate('/login')}
+            >
+              Iniciar sesión
+            </Button>
+          )}
+        </Box>
+      </Toolbar>
     </AppBar>
   );
 };

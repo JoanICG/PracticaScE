@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react';
-import { 
-  Container, 
-  Typography, 
-  Paper, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
+import {
+  Container,
+  Typography,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
   TableRow,
-  TextField,
+  CircularProgress,
+  Alert,
   Box,
-  CircularProgress
+  TextField,
+  InputAdornment
 } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 import api from '../../services/api';
 
 const UsersPage = () => {
@@ -23,33 +26,49 @@ const UsersPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await api.get('/admin/users');
-        setUsers(response.data.data.customers);
-        setFilteredUsers(response.data.data.customers);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error al obtener usuarios:', error);
-        setError('Error al cargar los usuarios');
-        setLoading(false);
-      }
-    };
-
     fetchUsers();
   }, []);
 
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/admin/users');
+      
+      // Verificar que la respuesta tenga la estructura esperada
+      if (response.data && response.data.success && response.data.data && response.data.data.users) {
+        setUsers(response.data.data.users);
+        setFilteredUsers(response.data.data.users);
+      } else {
+        // Si la respuesta no tiene la estructura esperada, establecer un array vacío
+        setUsers([]);
+        setFilteredUsers([]);
+        setError('La respuesta del servidor no tiene el formato esperado');
+      }
+    } catch (error) {
+      console.error('Error al obtener usuarios:', error);
+      setError('Error al cargar los usuarios: ' + (error.response?.data?.message || error.message));
+      // Establecer arrays vacíos para evitar errores al acceder a 'length'
+      setUsers([]);
+      setFilteredUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
+    // Si users es undefined o null, usar un array vacío para evitar errores
+    const usersArray = users || [];
+    
     if (searchTerm) {
-      const filtered = users.filter(user => 
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      const filtered = usersArray.filter(user => 
+        user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredUsers(filtered);
     } else {
-      setFilteredUsers(users);
+      setFilteredUsers(usersArray);
     }
-  }, [searchTerm, users]);
+  }, [users, searchTerm]);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -66,24 +85,33 @@ const UsersPage = () => {
   if (error) {
     return (
       <Container sx={{ mt: 4 }}>
-        <Typography color="error">{error}</Typography>
+        <Alert severity="error">{error}</Alert>
       </Container>
     );
   }
 
+  // Asegurar que filteredUsers siempre sea un array para evitar errores
+  const usersToDisplay = Array.isArray(filteredUsers) ? filteredUsers : [];
+
   return (
-    <Container sx={{ mt: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
         Gestión de Usuarios
       </Typography>
 
-      <Box sx={{ mb: 2 }}>
+      <Box sx={{ mb: 3 }}>
         <TextField
           fullWidth
-          variant="outlined"
-          label="Buscar por nombre o email"
+          label="Buscar usuario"
           value={searchTerm}
           onChange={handleSearchChange}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
         />
       </Box>
 
@@ -98,19 +126,21 @@ const UsersPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => (
+            {usersToDisplay.length > 0 ? (
+              usersToDisplay.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.role === 'admin' ? 'Administrador' : 'Cliente'}</TableCell>
-                  <TableCell>{new Date(user.createdAt).toLocaleString()}</TableCell>
+                  <TableCell>{user.role || 'customer'}</TableCell>
+                  <TableCell>
+                    {user.createdAt ? new Date(user.createdAt).toLocaleString() : 'N/A'}
+                  </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
                 <TableCell colSpan={4} align="center">
-                  No se encontraron usuarios
+                  No hay usuarios para mostrar
                 </TableCell>
               </TableRow>
             )}
