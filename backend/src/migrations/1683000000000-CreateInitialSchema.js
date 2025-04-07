@@ -33,7 +33,7 @@ module.exports = class CreateInitialSchema1683000000000 {
 
     // Create order status enum
     await queryRunner.query(`
-      CREATE TYPE order_status AS ENUM ('pending', 'processing', 'shipped', 'delivered', 'cancelled')
+      CREATE TYPE order_status AS ENUM ('pending', 'processing', 'shipped', 'delivered', 'cancelled', 'cart')
     `);
 
     // Create orders table

@@ -27,7 +27,9 @@ api.interceptors.request.use(
 const authAPI = {
   register: (userData) => api.post('/auth/register', userData),
   login: (userData) => api.post('/auth/login', userData),
-  getProfile: () => api.get('/auth/profile')
+  logout: () => api.post('/auth/logout'),
+  getProfile: () => api.get('/auth/profile'),
+  verifyAuth: () => api.get('/auth/verify')
 };
 
 // API para administradores

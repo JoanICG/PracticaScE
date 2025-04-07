@@ -10,22 +10,29 @@
     "migration:run": "node ./node_modules/typeorm/cli.js migration:run -d src/config/database.js",
     "migration:revert": "node ./node_modules/typeorm/cli.js migration:revert -d src/config/database.js"
   },
-  "keywords": ["ecommerce", "nodejs", "express", "typeorm", "postgresql"],
+  "keywords": [
+    "ecommerce",
+    "nodejs",
+    "express",
+    "typeorm",
+    "postgresql"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "helmet": "^7.0.0",
-    "dotenv": "^16.0.3",
-    "pg": "^8.10.0",
     "bcrypt": "^5.1.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.0",
-    "typeorm": "^0.3.15",
+    "pg": "^8.10.0",
     "reflect-metadata": "^0.1.13",
+    "typeorm": "^0.3.15",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
+    "nodemon": "^3.1.9"
   }
 }

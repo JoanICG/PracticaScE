@@ -56,10 +56,14 @@ const LoginForm = () => {
     if (!validateForm()) return;
     
     try {
-      await login(formData);
-      navigate('/');
+      const result = await login(formData);
+      if (result) {
+        // Navegamos a la página principal solo si el login fue exitoso
+        navigate('/');
+      }
     } catch (error) {
       console.error('Error de login:', error.message);
+      // Los errores deberían manejarse en el contexto de autenticación
     }
   };
 

@@ -14,7 +14,7 @@ const carsData = [
     description: "Réplica a escala 1:14 de Ferrari GT con detalles realistas. Control preciso con un alcance de hasta 30 metros.",
     price: 39.99,
     stock: 20,
-    imageUrl: "https://m.media-amazon.com/images/I/71vI8rQA9LL._AC_SL1500_.jpg"
+    imageUrl: "https://images.unsplash.com/photo-1624555130581-1d9cca783bc0?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
   },
   {
     name: "Buggy Desierto Extreme",

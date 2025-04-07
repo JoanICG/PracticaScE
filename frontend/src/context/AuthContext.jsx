@@ -1,7 +1,5 @@
 import { createContext, useState, useEffect } from 'react';
-import { getAuthToken, setAuthToken, clearAuthCookies, setUserData, getUserData } from '../utils/cookies';
 import api, { authAPI } from '../services/api';
-import Cookies from 'js-cookie'; // Asegúrate de que Cookies esté importado
 
 export const AuthContext = createContext();
 
@@ -10,19 +8,17 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Verificar si el usuario ya está logueado (desde cookie)
+  // Verificar autenticación al cargar
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const token = getAuthToken();
-        const userData = getUserData();
-        
-        if (token && userData) {
-          setUser(userData);
+        const response = await authAPI.verifyAuth();
+        if (response.data.success) {
+          setUser(response.data.data.user);
         }
       } catch (error) {
-        console.error('Error al verificar estado de autenticación:', error);
-        clearAuthCookies();
+        console.error('Error al verificar autenticación:', error);
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -31,18 +27,17 @@ export const AuthProvider = ({ children }) => {
     checkAuthStatus();
   }, []);
 
-  // Registrar un nuevo usuario
+  // Registrar usuario
   const register = async (userData) => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await authAPI.register(userData);
-      const { token, customer } = response.data.data;
-      
-      setAuthToken(token);
-      setUserData(customer);
-      setUser(customer);
-      return customer;
+      if (response.data.success) {
+        // Con cookies HttpOnly, no necesitamos manejar el token aquí
+        setUser(response.data.data.customer);
+        return response.data.data.customer;
+      }
     } catch (error) {
       const message = error.response?.data?.message || 'Error en el registro';
       setError(message);
@@ -52,23 +47,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Modifica tu función login:
+  // Login de usuario
   const login = async (userData) => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await authAPI.login(userData);
-      
       if (response.data.success) {
-        const { token, customer } = response.data.data;
-        
-        console.log('Token recibido:', token ? token.substring(0, 20) + '...' : 'No token');
-        console.log('Usuario recibido:', customer);
-        
-        setAuthToken(token);
-        setUserData(customer);
-        setUser(customer);
-        
+        // Con cookies HttpOnly, solo necesitamos los datos del usuario
+        setUser(response.data.data.customer);
         return true;
       }
     } catch (error) {
@@ -81,9 +68,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Logout de usuario
-  const logout = () => {
-    clearAuthCookies();
-    setUser(null);
+  const logout = async () => {
+    try {
+      await authAPI.logout();
+      setUser(null);
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
   };
 
   return (

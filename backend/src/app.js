@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser"); // Necesitas instalar: npm install cookie-parser
 require("reflect-metadata");
 const { AppDataSource } = require("./config/database");
 
@@ -14,11 +15,14 @@ const adminRoutes = require('./routes/admin.routes');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Configuración simplificada de CORS
+// Configuración CORS con soporte para cookies
 app.use(cors({
   origin: 'http://localhost:3000',
   credentials: true
 }));
+
+// Middleware para parsear cookies
+app.use(cookieParser());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -38,6 +42,6 @@ AppDataSource.initialize()
       console.log(`Server running on port ${PORT}`);
     });
   })
-  .catch((error) => console.log("Error connecting to database:", error));
+  .catch(error => console.log("Error connecting to database:", error));
 
 module.exports = app;

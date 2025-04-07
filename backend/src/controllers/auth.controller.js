@@ -1,165 +1,191 @@
+const jwt = require('jsonwebtoken');
 const { AppDataSource } = require("../config/database");
 const { hashPassword, comparePasswords } = require("../utils/password.util");
-const { generateToken } = require("../utils/jwt.util");
-const jwt = require('jsonwebtoken'); // Añadir esta importación
 
+// Registro de usuarios
 const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
+    
     const customerRepository = AppDataSource.getRepository("Customer");
-
-    // Validate input
-    if (!name || !email || !password) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Please provide name, email and password" 
-      });
-    }
-
-    // Check if user already exists
+    
+    // Verificar si el email ya existe
     const existingCustomer = await customerRepository.findOne({ where: { email } });
     if (existingCustomer) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Email already in use" 
+      return res.status(400).json({
+        success: false,
+        message: "El email ya está registrado"
       });
     }
-
-    // Hash password
+    
+    // Crear nuevo usuario con contraseña hasheada
     const hashedPassword = await hashPassword(password);
-
-    // Create new customer (always with role customer)
     const customer = customerRepository.create({
       name,
       email,
       password: hashedPassword,
-      role: "customer"  // Force role to customer
+      role: "customer" // Por defecto, todos los registros son clientes regulares
     });
-
+    
     await customerRepository.save(customer);
-
-    // Generate token
-    const token = generateToken({
-      id: customer.id,
-      email: customer.email,
-      name: customer.name,
-      role: customer.role
-    });
-
-    // Return success without password
+    
+    // Excluir password de la respuesta
     const { password: _, ...customerData } = customer;
+    
     return res.status(201).json({
       success: true,
-      message: "Registration successful",
+      message: "Usuario registrado correctamente",
       data: {
-        customer: { ...customerData, role: customer.role },
-        token
+        customer: customerData
       }
     });
   } catch (error) {
-    console.error("Registration error:", error);
-    return res.status(500).json({ 
-      success: false, 
-      message: "Server error during registration" 
+    console.error("Error en registro:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error del servidor durante el registro"
     });
   }
 };
 
+// Login de usuarios
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const customerRepository = AppDataSource.getRepository("Customer");
-
-    // Validate input
-    if (!email || !password) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Please provide email and password" 
-      });
-    }
-
-    // Buscar usuario sin filtrar por rol
-    const customer = await customerRepository.findOne({ 
-      where: { email } 
-    });
-    if (!customer) {
-      return res.status(401).json({ 
-        success: false, 
-        message: "Invalid credentials" 
-      });
-    }
-
-    // Validate password
-    const isPasswordValid = await comparePasswords(password, customer.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ 
-        success: false, 
-        message: "Invalid credentials" 
-      });
-    }
-
-    // Tras verificar el password:
-    console.log("Login exitoso para:", email, "con rol:", customer.role);
     
-    // Verifica que esta información se incluya en el token
+    // Buscar usuario por email
+    const customer = await customerRepository.findOne({ where: { email } });
+    
+    if (!customer || !(await comparePasswords(password, customer.password))) {
+      return res.status(401).json({ 
+        success: false, 
+        message: "Credenciales inválidas" 
+      });
+    }
+    
+    // Excluir password de los datos de usuario
+    const { password: _, ...userData } = customer;
+    
+    // Generar token JWT con sub igual al ID de usuario y expiración de 1 hora
     const token = jwt.sign(
       { 
-        id: customer.id, 
-        email: customer.email,
-        name: customer.name,
-        role: customer.role  // Asegúrate de que esto se incluya
+        sub: customer.id,    // Usar ID como subject, no el nombre
+        role: customer.role  // Solo mantener el rol para autorización
       }, 
       process.env.JWT_SECRET, 
-      { expiresIn: '24h' }
+      { expiresIn: '1h' }
     );
-
-    // Return token and user data without password
-    const { password: _, ...customerData } = customer;
+    
+    // SOLO establecer cookie HttpOnly, NO establecer user_data
+    res.cookie('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 1000, // 1 hora en milisegundos
+      sameSite: 'strict'
+    });
+    
+    // Retornar datos de usuario sin incluir el token en la respuesta
     return res.json({
       success: true,
       message: "Login successful",
       data: {
-        customer: { ...customerData, role: customer.role },
-        token
+        customer: userData
       }
     });
   } catch (error) {
     console.error("Login error:", error);
     return res.status(500).json({ 
       success: false, 
-      message: "Server error during login" 
+      message: "Error del servidor durante el login" 
     });
   }
 };
 
+// Logout de usuarios
+const logout = (req, res) => {
+  // Solo limpiar la cookie auth_token
+  res.clearCookie('auth_token');
+  
+  // También limpiar explícitamente user_data si existe
+  res.clearCookie('user_data');
+  
+  return res.json({
+    success: true,
+    message: "Logout successful"
+  });
+};
+
+// Obtener perfil de usuario
 const getProfile = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const { id } = req.user;
     const customerRepository = AppDataSource.getRepository("Customer");
     
-    const customer = await customerRepository.findOne({ where: { id: userId } });
+    const customer = await customerRepository.findOne({ where: { id } });
+    
     if (!customer) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "User not found" 
+      return res.status(404).json({
+        success: false,
+        message: "Usuario no encontrado"
       });
     }
-
-    // Return user data without password
-    const { password: _, ...customerData } = customer;
+    
+    // Excluir password de la respuesta
+    const { password: _, ...userData } = customer;
+    
     return res.json({
       success: true,
       data: {
-        customer: customerData
+        user: userData
       }
     });
   } catch (error) {
-    console.error("Get profile error:", error);
-    return res.status(500).json({ 
-      success: false, 
-      message: "Server error retrieving profile" 
+    console.error("Error al obtener perfil:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error del servidor al obtener perfil"
     });
   }
 };
 
-module.exports = { register, login, getProfile };
+// Verificar autenticación
+const verifyAuth = (req, res) => {
+  return res.json({
+    success: true,
+    data: {
+      user: req.user
+    }
+  });
+};
+
+// Agregar endpoint de renovación de token
+const refreshToken = (req, res) => {
+  // El usuario ya está autenticado en este punto (gracias al middleware)
+  const newToken = jwt.sign(
+    { sub: req.user.id, role: req.user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: '1h' }
+  );
+  
+  res.cookie('auth_token', newToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 60 * 60 * 1000,
+    sameSite: 'strict'
+  });
+  
+  return res.json({
+    success: true,
+    message: "Token renovado correctamente"
+  });
+};
+
+module.exports = {
+  register,
+  login,
+  logout,
+  getProfile,
+  verifyAuth,
+  refreshToken
+};

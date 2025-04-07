@@ -1,30 +1,48 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
+/**
+ * Middleware para verificar la autenticación del usuario mediante JWT
+ * Únicamente acepta token desde cookie HttpOnly
+ */
 const authMiddleware = (req, res, next) => {
   try {
-    // Buscar token en authorization header
-    const authHeader = req.headers.authorization;
+    // Obtener token únicamente de la cookie HttpOnly
+    const token = req.cookies.auth_token;
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.log("No token provided o formato incorrecto");
+    if (!token) {
       return res.status(401).json({ 
         success: false, 
-        message: "Token no proporcionado" 
+        message: "No autenticado" 
       });
     }
 
-    const token = authHeader.split(' ')[1];
-    
-    // Verificar token
+    // Verificar token con la clave secreta
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "your_jwt_secret_key");
     
-    // Guardar datos de usuario en req para uso en otros middlewares
+    // Verificar que el token no ha expirado
+    const currentTime = Math.floor(Date.now() / 1000);
+    if (decoded.exp <= currentTime) {
+      // Si el token ha expirado, limpiar la cookie
+      res.clearCookie('auth_token');
+      
+      return res.status(401).json({
+        success: false,
+        message: "Token expirado"
+      });
+    }
+    
+    // Guardar datos de usuario decodificados para uso en los controladores
     req.user = decoded;
     
+    // Continuar con la siguiente función en la cadena de middleware
     next();
   } catch (error) {
     console.error("Error en auth middleware:", error);
+    
+    // Si hay un error de verificación, limpiar la cookie
+    res.clearCookie('auth_token');
+    
     return res.status(401).json({ 
       success: false, 
       message: "No autorizado: token inválido o expirado" 
