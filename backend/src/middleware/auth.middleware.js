@@ -7,10 +7,22 @@ require('dotenv').config();
  */
 const authMiddleware = (req, res, next) => {
   try {
-    // Obtener token únicamente de la cookie HttpOnly
-    const token = req.cookies.auth_token;
+    // Intentar obtener token de diferentes fuentes
+    let authToken = null;
     
-    if (!token) {
+    // 1. Primero buscar en cookies
+    if (req.cookies && req.cookies.auth_token) {
+      authToken = req.cookies.auth_token;
+    } 
+    // 2. Si no hay en cookies, buscar en header Authorization
+    else if (req.headers.authorization) {
+      const authHeader = req.headers.authorization;
+      if (authHeader.startsWith('Bearer ')) {
+        authToken = authHeader.substring(7);
+      }
+    }
+    
+    if (!authToken) {
       return res.status(401).json({ 
         success: false, 
         message: "No autenticado" 
@@ -18,29 +30,19 @@ const authMiddleware = (req, res, next) => {
     }
 
     // Verificar token con la clave secreta
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "your_jwt_secret_key");
+    const decoded = jwt.verify(authToken, process.env.JWT_SECRET || "your_jwt_secret_key");
     
-    // Verificar que el token no ha expirado
-    const currentTime = Math.floor(Date.now() / 1000);
-    if (decoded.exp <= currentTime) {
-      // Si el token ha expirado, limpiar la cookie
-      res.clearCookie('auth_token');
-      
-      return res.status(401).json({
-        success: false,
-        message: "Token expirado"
-      });
-    }
+    // IMPORTANTE: Mapear los datos del token al formato que espera la aplicación
+    req.user = {
+      id: decoded.sub,      // Mapear sub a id
+      role: decoded.role,   // Mantener el rol
+      name: decoded.name,   // Incluir nombre si está en el token
+      email: decoded.email  // Incluir email si está en el token
+    };
     
-    // Guardar datos de usuario decodificados para uso en los controladores
-    req.user = decoded;
-    
-    // Continuar con la siguiente función en la cadena de middleware
     next();
   } catch (error) {
     console.error("Error en auth middleware:", error);
-    
-    // Si hay un error de verificación, limpiar la cookie
     res.clearCookie('auth_token');
     
     return res.status(401).json({ 

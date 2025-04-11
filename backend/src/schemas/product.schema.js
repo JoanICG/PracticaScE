@@ -16,33 +16,39 @@ const ProductSchema = new EntitySchema({
       type: String
     },
     price: {
-      type: "decimal", 
-      precision: 10, 
+      type: "decimal",
+      precision: 10,
       scale: 2
-    },
-    stock: {
-      type: Number
     },
     imageUrl: {
       type: String,
       nullable: true
     },
+    stock: {
+      type: Number,
+      default: 0
+    },
+    detailedDescription: {
+      type: "text",
+      nullable: true
+    },
+    specifications: {
+      type: "json",
+      nullable: true
+    },
+    // Añadir campos de timestamp
     createdAt: {
-      type: Date,
-      createDate: true
+      type: "timestamp",
+      createDate: true,
+      nullable: true
     },
     updatedAt: {
-      type: Date,
-      updateDate: true
+      type: "timestamp",
+      updateDate: true,
+      nullable: true
     }
   },
-  relations: {
-    orderItems: {
-      type: "one-to-many",
-      target: "OrderItem",
-      inverseSide: "product"
-    }
-  }
+  // ...relaciones y otras configuraciones existentes...
 });
 
 module.exports = { ProductSchema };

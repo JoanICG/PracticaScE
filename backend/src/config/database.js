@@ -13,11 +13,13 @@ const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME || "postgres",
   password: process.env.DB_PASSWORD || "postgres",
   database: process.env.DB_DATABASE || "ecommerce",
-  synchronize: process.env.DB_SYNCHRONIZE === "true",
+  synchronize: true, // SOLO USAR EN DESARROLLO
   logging: process.env.DB_LOGGING === "true",
   entities: [CustomerSchema, ProductSchema, OrderSchema, OrderItemSchema],
   migrations: ["src/migrations/**/*.js"],
   subscribers: ["src/subscribers/**/*.js"],
 });
+
+// Recuerda desactivar synchronize después de la actualización
 
 module.exports = { AppDataSource };

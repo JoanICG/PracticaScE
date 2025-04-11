@@ -70,8 +70,10 @@ const login = async (req, res) => {
     // Generar token JWT con sub igual al ID de usuario y expiración de 1 hora
     const token = jwt.sign(
       { 
-        sub: customer.id,    // Usar ID como subject, no el nombre
-        role: customer.role  // Solo mantener el rol para autorización
+        sub: customer.id,    // ID como subject
+        role: customer.role, // Rol para autorización
+        name: customer.name, // Opcionalmente incluir más información
+        email: customer.email
       }, 
       process.env.JWT_SECRET, 
       { expiresIn: '1h' }

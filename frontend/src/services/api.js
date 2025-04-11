@@ -14,6 +14,7 @@ api.interceptors.request.use(
     console.log('Token enviado en la solicitud:', token ? token.substring(0, 20) + '...' : 'No token');
     
     if (token) {
+      // Añadir el prefijo "Bearer" al token
       config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;

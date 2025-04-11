@@ -25,22 +25,24 @@ const getAllProducts = async (req, res) => {
   }
 };
 
-// Obtener un producto por ID
+/**
+ * Obtiene los detalles de un producto específico
+ */
 const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
-    const productRepository = AppDataSource.getRepository("Product");
-    const product = await productRepository.findOne({
+    
+    const product = await AppDataSource.getRepository("Product").findOne({
       where: { id }
     });
-
+    
     if (!product) {
       return res.status(404).json({
         success: false,
         message: "Producto no encontrado"
       });
     }
-
+    
     return res.json({
       success: true,
       data: {
@@ -48,10 +50,10 @@ const getProductById = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error("Error al obtener producto:", error);
+    console.error("Error al obtener detalles del producto:", error);
     return res.status(500).json({
       success: false,
-      message: "Error del servidor"
+      message: "Error al obtener detalles del producto"
     });
   }
 };

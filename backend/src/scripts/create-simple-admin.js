@@ -29,6 +29,7 @@ const createSimpleAdmin = async () => {
     if (existingAdmin) {
       console.log("El administrador ya existe, actualizando contraseña...");
       existingAdmin.password = hashedPassword;
+      existingAdmin.role = "admin"; // Asegurarse que tenga rol admin
       await customerRepository.save(existingAdmin);
       console.log("Contraseña actualizada correctamente");
     } else {
@@ -56,17 +57,3 @@ const createSimpleAdmin = async () => {
 };
 
 createSimpleAdmin();
-
-// En Header.jsx, cerca de la línea 43-50
-
-// Páginas públicas
-const publicPages = [
-  { title: 'Login', path: '/login' },
-  { title: 'Registro', path: '/register' },
-];
-
-// Páginas a mostrar según estado de autenticación y rol
-let pages = publicPages;
-if (isAuthenticated) {
-  pages = user?.role === 'admin' ? [...adminPages, ...customerPages] : customerPages;
-}

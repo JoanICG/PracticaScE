@@ -12,6 +12,7 @@ import ProductsPage from './pages/ProductsPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrdersPage from './pages/OrdersPage';
+import ProductDetailPage from './pages/ProductDetailPage';
 
 // Crear tema
 const theme = createTheme({
@@ -38,6 +39,7 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/" element={<ProductsPage />} />
+              <Route path="/products/:productId" element={<ProductDetailPage />} />
               
               {/* Rutas protegidas para cualquier usuario autenticado */}
               <Route element={<ProtectedRoute />}>
