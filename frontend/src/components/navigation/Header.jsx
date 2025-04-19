@@ -130,6 +130,9 @@ const Header = () => {
               </MenuItem>,
               <MenuItem key="orders" onClick={() => handleMenuClick('/admin/orders')}>
                 <Typography textAlign="center">Gestionar Pedidos</Typography>
+              </MenuItem>,
+              <MenuItem key="add-product" onClick={() => handleMenuClick('/admin/add-product')}>
+                <Typography textAlign="center">Añadir Productos</Typography>
               </MenuItem>
             ] : null}
           </Menu>
@@ -182,7 +185,18 @@ const Header = () => {
               >
                 Gestionar Pedidos
               </Button>
+              <Button
+                onClick={() => handleMenuClick('/admin/add-product')}
+                sx={{ my: 2, color: 'white', display: 'block' }}
+              >
+                Añadir Productos
+              </Button>
             </>
+          )}
+          {user?.role === 'admin' && (
+            <Button onClick={() => handleMenuClick('/admin/add-product')}>
+              Añadir Productos
+            </Button>
           )}
         </Box>
 
@@ -257,6 +271,12 @@ const Header = () => {
                       <ShoppingBagIcon fontSize="small" />
                     </ListItemIcon>
                     <ListItemText>Gestionar Pedidos</ListItemText>
+                  </MenuItem>,
+                  <MenuItem key="admin-add-product" onClick={() => handleMenuClick('/admin/add-product')}>
+                    <ListItemIcon>
+                      <ShoppingBagIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Añadir Productos</ListItemText>
                   </MenuItem>
                 ] : null}
                 

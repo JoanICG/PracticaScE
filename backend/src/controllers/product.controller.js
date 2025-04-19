@@ -58,4 +58,41 @@ const getProductById = async (req, res) => {
   }
 };
 
-module.exports = { getAllProducts, getProductById };
+const addProduct = async (req, res) => {
+  try {
+    const { name, description, price, stock, imageUrl } = req.body;
+
+    if (!name || !description || !price || !stock) {
+      return res.status(400).json({
+        success: false,
+        message: "Todos los campos obligatorios deben ser completados.",
+      });
+    }
+
+    const productRepository = AppDataSource.getRepository("Product");
+
+    const newProduct = productRepository.create({
+      name,
+      description,
+      price,
+      stock,
+      imageUrl,
+    });
+
+    await productRepository.save(newProduct);
+
+    return res.status(201).json({
+      success: true,
+      message: "Producto añadido con éxito.",
+      data: newProduct,
+    });
+  } catch (error) {
+    console.error("Error al añadir producto:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error del servidor.",
+    });
+  }
+};
+
+module.exports = { getAllProducts, getProductById, addProduct };

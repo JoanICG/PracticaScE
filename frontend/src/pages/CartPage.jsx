@@ -1,3 +1,6 @@
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import CheckoutForm from "../components/CheckoutForm"; // Crearás este componente
 import { useState, useEffect } from 'react';
 import { 
   Container, 
@@ -14,20 +17,25 @@ import {
   TableRow,
   IconButton,
   TextField,
-  Divider
+  Divider,
+  Badge
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+
+const stripePromise = loadStripe("tu_clave_publica_de_stripe");
 
 const CartPage = () => {
   const [cart, setCart] = useState({ orderItems: [], totalAmount: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [updating, setUpdating] = useState(false);
+  const [clientSecret, setClientSecret] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,25 +56,35 @@ const CartPage = () => {
   };
 
   const handleUpdateQuantity = async (itemId, quantity) => {
+    if (quantity < 0) return; // Evitar cantidades negativas
+
     try {
       setUpdating(true);
       await api.put('/cart/update-item', {
-        itemId,
-        quantity
+        id: itemId,
+        quantity: quantity,
       });
-      await fetchCart();
+      fetchCart(); // Actualizar el carrito después de la modificación
     } catch (error) {
-      console.error('Error al actualizar carrito:', error);
-      alert(error.response?.data?.message || 'Error al actualizar el carrito');
+      console.error('Error al actualizar la cantidad:', error);
+      alert('No se pudo actualizar la cantidad del producto.');
     } finally {
       setUpdating(false);
     }
   };
-
-  const handleCheckout = () => {
-    navigate('/checkout');
+  
+  const handleCheckout = async () => {
+    try {
+      const response = await api.post("/cart/create-payment-intent", {
+        totalAmount: cart.totalAmount,
+      });
+      console.log("Client Secret:", response.data.clientSecret); // Verificar el clientSecret
+      setClientSecret(response.data.clientSecret);
+    } catch (error) {
+      console.error("Error al iniciar el pago:", error);
+      alert("Error al iniciar el pago");
+    }
   };
-
   if (loading) {
     return (
       <Container sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
@@ -83,11 +101,29 @@ const CartPage = () => {
     );
   }
 
+  if (clientSecret) {
+    return (
+      <Elements stripe={stripePromise} options={{ clientSecret }}>
+        <CheckoutForm />
+      </Elements>
+    );
+  }
+
   return (
     <Container sx={{ mt: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom>
         Tu Carrito
       </Typography>
+
+      <IconButton 
+        onClick={() => navigate('/cart')} 
+        color="inherit"
+        size="large"
+      >
+        <Badge color="secondary" badgeContent={0}>
+          <ShoppingCartIcon />
+        </Badge>
+      </IconButton>
 
       {cart.orderItems.length > 0 ? (
         <>

@@ -8,6 +8,7 @@ import ProtectedRoute from './components/layout/ProtectedRoute';
 import AdminRoute from './components/layout/AdminRoute';
 import UsersPage from './pages/admin/UsersPage';
 import OrdersAdminPage from './pages/admin/OrdersAdminPage';
+import AddProductPage from './pages/admin/AddProductPage'; // Importar la página de añadir productos
 import ProductsPage from './pages/ProductsPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
@@ -52,6 +53,7 @@ function App() {
               <Route element={<AdminRoute />}>
                 <Route path="/admin/users" element={<UsersPage />} />
                 <Route path="/admin/orders" element={<OrdersAdminPage />} />
+                <Route path="/admin/add-product" element={<AddProductPage />} /> {/* Añadir productos */}
               </Route>
               
               {/* Ruta 404 */}
