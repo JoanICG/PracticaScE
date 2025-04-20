@@ -1,8 +1,8 @@
 const { EntitySchema } = require("typeorm");
 
-const ProductSchema = new EntitySchema({
-  name: "Product",
-  tableName: "products",
+const SparePartSchema = new EntitySchema({
+  name: "SparePart",
+  tableName: "spare_parts",
   columns: {
     id: {
       type: "uuid",
@@ -10,33 +10,28 @@ const ProductSchema = new EntitySchema({
       generated: "uuid"
     },
     name: {
-      type: String
+      type: String,
+      nullable: false
     },
     description: {
-      type: String
+      type: String,
+      nullable: true
     },
     price: {
       type: "decimal",
       precision: 10,
-      scale: 2
-    },
-    imageUrl: {
-      type: String,
-      nullable: true
+      scale: 2,
+      nullable: false
     },
     stock: {
       type: Number,
       default: 0
     },
-    detailedDescription: {
-      type: "text",
+    imageUrl: {
+      type: String,
       nullable: true
     },
-    specifications: {
-      type: "json",
-      nullable: true
-    },
-    // Añadir campos de timestamp
+    // Timestamps
     createdAt: {
       type: "timestamp",
       createDate: true,
@@ -49,13 +44,17 @@ const ProductSchema = new EntitySchema({
     }
   },
   relations: {
-    spareParts: {
-      type: "one-to-many",
-      target: "SparePart",
-      inverseSide: "product",
-      cascade: true
+    product: {
+      type: "many-to-one",
+      target: "Product",
+      inverseSide: "spareParts",
+      joinColumn: {
+        name: "product_id",
+        referencedColumnName: "id"
+      },
+      onDelete: "CASCADE"
     }
   }
 });
 
-module.exports = { ProductSchema };
+module.exports = { SparePartSchema };

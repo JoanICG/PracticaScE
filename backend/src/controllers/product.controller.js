@@ -32,9 +32,11 @@ const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
     
-    const product = await AppDataSource.getRepository("Product").findOne({
-      where: { id }
-    });
+    const product = await AppDataSource.getRepository("Product")
+      .createQueryBuilder("product")
+      .leftJoinAndSelect("product.spareParts", "spareParts")
+      .where("product.id = :id", { id })
+      .getOne();
     
     if (!product) {
       return res.status(404).json({

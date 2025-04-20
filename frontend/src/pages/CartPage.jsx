@@ -55,21 +55,18 @@ const CartPage = () => {
     }
   };
 
-  const handleUpdateQuantity = async (itemId, quantity) => {
-    if (quantity < 0) return; // Evitar cantidades negativas
-
+  const handleUpdateQuantity = async (itemId, newQuantity) => {
     try {
-      setUpdating(true);
-      await api.put('/cart/update-item', {
-        id: itemId,
-        quantity: quantity,
+      const response = await api.put('/cart/update-item', {
+        itemId: itemId,         // Asegúrate de usar exactamente este nombre
+        quantity: newQuantity   // Asegúrate de usar exactamente este nombre
       });
-      fetchCart(); // Actualizar el carrito después de la modificación
+      
+      // Actualizar el estado local con la respuesta
+      setCart(response.data.data.cart);
     } catch (error) {
       console.error('Error al actualizar la cantidad:', error);
-      alert('No se pudo actualizar la cantidad del producto.');
-    } finally {
-      setUpdating(false);
+      alert(error.response?.data?.message || 'Error al actualizar el carrito');
     }
   };
   

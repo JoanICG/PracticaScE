@@ -169,31 +169,45 @@ const updateCartItem = async (req, res) => {
     const { itemId, quantity } = req.body;
     const userId = req.user.id;
 
-    if (!itemId || !quantity) {
+    // Validar que se proporcionó un itemId
+    if (!itemId) {
       return res.status(400).json({
         success: false,
-        message: "ID del item y cantidad son requeridos"
+        message: "ID del item del carrito es requerido"
       });
     }
 
-    const orderRepository = AppDataSource.getRepository("Order");
+    // Validar que se proporcionó una cantidad (puede ser 0 para eliminar)
+    if (quantity === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: "La cantidad es requerida"
+      });
+    }
+
     const orderItemRepository = AppDataSource.getRepository("OrderItem");
+    const orderRepository = AppDataSource.getRepository("Order");
 
-    // Verificar que el item existe y pertenece al carrito del usuario
-    const orderItem = await orderItemRepository.findOne({
-      where: { id: itemId },
-      relations: ["order", "order.customer", "product"]
-    });
+    // Buscar el item en el carrito
+    const orderItem = await orderItemRepository
+      .createQueryBuilder("orderItem")
+      .leftJoinAndSelect("orderItem.order", "order")
+      .leftJoinAndSelect("order.customer", "customer")
+      .leftJoinAndSelect("orderItem.product", "product")
+      .where("orderItem.id = :itemId", { itemId })
+      .andWhere("customer.id = :userId", { userId })
+      .andWhere("order.status = :status", { status: "cart" })
+      .getOne();
 
-    if (!orderItem || orderItem.order.customer.id !== userId) {
+    if (!orderItem) {
       return res.status(404).json({
         success: false,
         message: "Item no encontrado en el carrito"
       });
     }
 
-    if (quantity <= 0) {
-      // Eliminar item
+    // Si la cantidad es 0, eliminar el item del carrito
+    if (quantity === 0) {
       await orderItemRepository.remove(orderItem);
     } else {
       // Verificar stock disponible
@@ -204,37 +218,56 @@ const updateCartItem = async (req, res) => {
         });
       }
 
-      // Actualizar cantidad
+      // Actualizar la cantidad y el precio
       orderItem.quantity = quantity;
       await orderItemRepository.save(orderItem);
     }
 
-    // Recalcular total del carrito
-    const cart = await orderRepository.findOne({
-      where: { id: orderItem.order.id },
-      relations: ["orderItems", "orderItems.product"]
-    });
+    // Recalcular el total del carrito
+    const orderId = orderItem.order.id;
+    const updatedOrderItems = await orderItemRepository
+      .createQueryBuilder("orderItem")
+      .leftJoinAndSelect("orderItem.product", "product")
+      .where("orderItem.order_id = :orderId", { orderId })
+      .getMany();
 
-    const total = cart.orderItems.reduce(
-      (sum, item) => sum + (parseFloat(item.price) * item.quantity),
-      0
-    );
+    // Calcular nuevo totalAmount
+    let totalAmount = 0;
+    for (const item of updatedOrderItems) {
+      totalAmount += parseFloat(item.price) * item.quantity;
+    }
 
-    cart.totalAmount = total;
-    await orderRepository.save(cart);
+    // Actualizar el totalAmount en la orden
+    await orderRepository
+      .createQueryBuilder()
+      .update()
+      .set({ totalAmount })
+      .where("id = :id", { id: orderId })
+      .execute();
 
-    return res.status(200).json({
+    // Obtener el carrito actualizado completo
+    const updatedCart = await orderRepository
+      .createQueryBuilder("order")
+      .leftJoinAndSelect("order.orderItems", "orderItems")
+      .leftJoinAndSelect("orderItems.product", "product")
+      .where("order.id = :id", { id: orderId })
+      .getOne();
+
+    return res.json({
       success: true,
-      message: "Carrito actualizado",
-      data: { cart }
+      data: {
+        cart: updatedCart
+      },
+      message: quantity === 0 ? "Item eliminado del carrito" : "Cantidad actualizada"
     });
   } catch (error) {
-    console.error("Error al actualizar carrito:", error);
+    console.error("Error al actualizar ítem del carrito:", error);
     return res.status(500).json({
       success: false,
-      message: "Error del servidor"
+      message: "Error al actualizar ítem del carrito"
     });
   }
 };
 
+// Asegúrate de exportar la función correctamente
 module.exports = { addToCart, getCart, updateCartItem };

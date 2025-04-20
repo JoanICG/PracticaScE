@@ -20,6 +20,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import SparePart from '../components/SparePart';
 
 const ProductDetailPage = () => {
   const { productId } = useParams();
@@ -31,8 +32,11 @@ const ProductDetailPage = () => {
 
   useEffect(() => {
     const fetchProductDetails = async () => {
+      setLoading(true);
       try {
         const response = await api.get(`/products/${productId}`);
+        
+        // Los repuestos ya deberían venir incluidos gracias a los cambios en el backend
         setProduct(response.data.data.product);
       } catch (error) {
         console.error('Error al obtener detalles del producto:', error);
@@ -212,6 +216,26 @@ const ProductDetailPage = () => {
             </TableContainer>
           </Grid>
         )}
+
+        {/* Repuestos compatibles */}
+        <Grid item xs={12}>
+          <Box mt={5}>
+            <Typography variant="h5" gutterBottom fontWeight="bold">
+              Repuestos compatibles
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            
+            {product.spareParts && product.spareParts.length > 0 ? (
+              product.spareParts.map((part) => (
+                <SparePart key={part.id} sparePart={part} />
+              ))
+            ) : (
+              <Typography variant="body1" color="text.secondary">
+                No hay repuestos disponibles para este producto
+              </Typography>
+            )}
+          </Box>
+        </Grid>
       </Grid>
     </Container>
   );
