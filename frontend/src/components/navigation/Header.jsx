@@ -16,6 +16,11 @@ import {
   Tooltip
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
+import AddIcon from '@mui/icons-material/Add';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -81,7 +86,7 @@ const Header = () => {
           }}
           onClick={() => navigate('/')}
         >
-          RC Cars Shop
+          RC Nomad
         </Typography>
 
         {/* Menú hamburguesa (móvil) */}
@@ -154,49 +159,65 @@ const Header = () => {
         </Typography>
 
         {/* Enlaces de navegación (escritorio) */}
-        <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-          <Button
-            onClick={() => handleMenuClick('/')}
-            sx={{ my: 2, color: 'white', display: 'block' }}
-          >
-            Productos
-          </Button>
+        <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, ml: 5 }}>
+          {/* Botón Productos */}
+          <Tooltip title="Productos">
+            <IconButton
+              onClick={() => handleMenuClick('/')}
+              color="inherit"
+              size="large"
+              sx={{ my: 2 }}
+            >
+              <InventoryIcon />
+            </IconButton>
+          </Tooltip>
           
           {user && (
-            <Button
+          <Tooltip title="Mis Pedidos">
+            <IconButton
               onClick={() => handleMenuClick('/orders')}
-              sx={{ my: 2, color: 'white', display: 'block' }}
+              color="inherit"
+              size="large"
+              sx={{ my: 2 }}
             >
-              Mis Pedidos
-            </Button>
-          )}
+              <BookmarkBorderIcon />
+            </IconButton>
+          </Tooltip>
+            )}
           
           {user && user.role === 'admin' && (
             <>
-              <Button
-                onClick={() => handleMenuClick('/admin/users')}
-                sx={{ my: 2, color: 'white', display: 'block' }}
-              >
-                Gestionar Usuarios
-              </Button>
-              <Button
-                onClick={() => handleMenuClick('/admin/orders')}
-                sx={{ my: 2, color: 'white', display: 'block' }}
-              >
-                Gestionar Pedidos
-              </Button>
-              <Button
-                onClick={() => handleMenuClick('/admin/add-product')}
-                sx={{ my: 2, color: 'white', display: 'block' }}
-              >
-                Añadir Productos
-              </Button>
+              <Tooltip title="Gestionar Usuarios">
+                <IconButton
+                  onClick={() => handleMenuClick('/admin/users')}
+                  color="inherit"
+                  size="large"
+                  sx={{ my: 2 }}
+                >
+                  <ManageAccountsIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Gestionar Pedidos">
+                <IconButton
+                  onClick={() => handleMenuClick('/admin/orders')}
+                  color="inherit"
+                  size="large"
+                  sx={{ my: 2 }}
+                >
+                  <ProductionQuantityLimitsIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Añadir Productos">
+                <IconButton
+                  onClick={() => handleMenuClick('/admin/add-product')}
+                  color="inherit"
+                  size="large"
+                  sx={{ my: 2 }}
+                >
+                  <AddIcon />
+                </IconButton>
+              </Tooltip>
             </>
-          )}
-          {user?.role === 'admin' && (
-            <Button onClick={() => handleMenuClick('/admin/add-product')}>
-              Añadir Productos
-            </Button>
           )}
         </Box>
 

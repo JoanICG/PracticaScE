@@ -99,7 +99,7 @@ const ProductsPage = () => {
   return (
     <Container maxWidth="xl" sx={{ mt: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        Coches Teledirigidos
+        RC
       </Typography>
 
       <Box sx={{ mb: 3 }}>

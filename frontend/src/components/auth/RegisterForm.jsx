@@ -19,7 +19,7 @@ const RegisterForm = () => {
     confirmPassword: ''
   });
   const [formErrors, setFormErrors] = useState({});
-  const { register, isLoading, error } = useAuth();
+  const { register, login, isLoading, error } = useAuth();
   const navigate = useNavigate();
 
   // Manejar cambio en inputs
@@ -74,6 +74,16 @@ const RegisterForm = () => {
     
     try {
       await register(registerData);
+      const loginData = {
+        email: registerData.email,
+        password: registerData.password
+      };
+      try {
+        const loginResponse = await login(loginData);
+        console.log('Inicio de sesión exitoso:', loginResponse);
+      } catch (error) {
+        console.error('Error de inicio de sesión:', error.message);
+      }
       navigate('/');
     } catch (error) {
       console.error('Error de registro:', error.message);

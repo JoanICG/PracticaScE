@@ -18,11 +18,18 @@ import ProductDetailPage from './pages/ProductDetailPage';
 // Crear tema
 const theme = createTheme({
   palette: {
+    mode: 'light',
     primary: {
-      main: '#1976d2',
+      main: '#6d1f20',
+      light: '#693b3b',
+      dark: '#582326',
+      contrastText: '#ffffff',
     },
     secondary: {
-      main: '#dc004e',
+      main: '#c76060',
+    },
+    background: {
+      default: '#ffffff',
     },
   },
 });
@@ -33,7 +40,7 @@ function App() {
       <CssBaseline />
       <AuthProvider>
         <Router>
-          <Header />
+          <Header/> {/* Reemplaza Header con el nuevo menú */}
           <Box component="main" sx={{ p: 3 }}>
             <Routes>
               {/* Rutas públicas */}
