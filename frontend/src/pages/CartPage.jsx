@@ -28,7 +28,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
-const stripePromise = loadStripe("tu_clave_publica_de_stripe");
+const stripePromise = loadStripe("pk_test_51RMVXe4FE38O7zRrFoDEZ9JKdAdwn9I3jebSGHYr3MgyjyNuROWPyi4UxROyJoFR0PMc9OrLC3ULFJUnO3t4qbeZ006ZtZKmAm");
 
 const CartPage = () => {
   const [cart, setCart] = useState({ orderItems: [], totalAmount: 0 });
@@ -101,7 +101,7 @@ const CartPage = () => {
   if (clientSecret) {
     return (
       <Elements stripe={stripePromise} options={{ clientSecret }}>
-        <CheckoutForm />
+        <CheckoutForm clientSecret={clientSecret}/>
       </Elements>
     );
   }
