@@ -7,20 +7,8 @@ require('dotenv').config();
  */
 const authMiddleware = (req, res, next) => {
   try {
-    // Intentar obtener token de diferentes fuentes
-    let authToken = null;
-    
-    // 1. Primero buscar en cookies
-    if (req.cookies && req.cookies.auth_token) {
-      authToken = req.cookies.auth_token;
-    } 
-    // 2. Si no hay en cookies, buscar en header Authorization
-    else if (req.headers.authorization) {
-      const authHeader = req.headers.authorization;
-      if (authHeader.startsWith('Bearer ')) {
-        authToken = authHeader.substring(7);
-      }
-    }
+    // Obtener token únicamente de cookies HttpOnly
+    const authToken = req.cookies && req.cookies.auth_token;
     
     if (!authToken) {
       return res.status(401).json({ 

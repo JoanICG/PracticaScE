@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }) => {
         user,
         isLoading,
         error,
-        isAuthenticated: !!user,
+        isAuthenticated: !!user,  //Return strict boolean
         register,
         login,
         logout
