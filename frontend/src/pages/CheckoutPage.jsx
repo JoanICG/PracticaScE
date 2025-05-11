@@ -147,19 +147,26 @@ const CheckoutPage = () => {
             <Typography variant="h6" gutterBottom>
               Dirección de envío
             </Typography>
-            <TextField
-              required
-              id="address"
-              name="address"
-              label="Dirección completa"
-              fullWidth
-              variant="outlined"
-              value={shippingAddress}
-              onChange={handleShippingAddressChange}
-              multiline
-              rows={4}
-              sx={{ mb: 2 }}
-            />
+            <Grid container spacing={2}>
+              <Grid sx={{ gridColumn: { xs: 'span 12', md: 'span 6' } }}>
+                <Typography variant="h6" gutterBottom>
+                  Dirección de envío
+                </Typography>
+                <TextField
+                  required
+                  id="address"
+                  name="address"
+                  label="Dirección completa"
+                  fullWidth
+                  variant="outlined"
+                  value={shippingAddress}
+                  onChange={handleShippingAddressChange}
+                  multiline
+                  rows={4}
+                  sx={{ mb: 2 }}
+                />
+              </Grid>
+            </Grid>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
               <Button
                 variant="contained"

@@ -21,6 +21,17 @@ app.use(cors({
   credentials: true
 }));
 
+// Configuración personalizada de CORS
+app.use((request, response, next) => {
+  response.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+  response.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  response.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  if (request.method === 'OPTIONS') {
+    return response.sendStatus(200);
+  }
+  next();
+});
+
 // Middleware para parsear cookies
 app.use(cookieParser());
 

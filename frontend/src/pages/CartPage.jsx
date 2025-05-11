@@ -211,28 +211,30 @@ const CartPage = () => {
                 {parseFloat(cart.totalAmount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
               </Typography>
             </Box>
-            <Grid item sx={{ gridColumn: { xs: 'span 12', md: 'span 6' } }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                Productos
-              </Typography>
-              <List>
-                {cart.orderItems.map((item) => (
-                  <ListItem key={item.id} sx={{ py: 1, px: 0 }}>
-                    <ListItemText
-                      primary={item.product.name}
-                      secondary={`Cantidad: ${item.quantity}`}
-                    />
-                    <Typography variant="body2">
-                      {(parseFloat(item.price) * item.quantity).toLocaleString('es-ES', { 
-                        style: 'currency', 
-                        currency: 'EUR' 
-                      })}
-                    </Typography>
-                  </ListItem>
-                ))}
-              </List>
+            <Grid container spacing={2}>
+              <Grid sx={{ gridColumn: { xs: 'span 12', sm: 'span 6' } }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                  Productos
+                </Typography>
+                <List>
+                  {cart.orderItems.map((item) => (
+                    <ListItem key={item.id} sx={{ py: 1, px: 0 }}>
+                      <ListItemText
+                        primary={item.product.name}
+                        secondary={`Cantidad: ${item.quantity}`}
+                      />
+                      <Typography variant="body2">
+                        {(parseFloat(item.price) * item.quantity).toLocaleString('es-ES', { 
+                          style: 'currency', 
+                          currency: 'EUR' 
+                        })}
+                      </Typography>
+                    </ListItem>
+                  ))}
+                </List>
+              </Grid>
             </Grid>
-            {/*Boton que se encarga de redirigirte a la pagina checkout*/}
+            {/* Botón para finalizar la compra */}
             <Button 
               variant="contained" 
               fullWidth 

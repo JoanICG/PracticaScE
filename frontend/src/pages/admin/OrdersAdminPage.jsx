@@ -204,22 +204,24 @@ const OrdersAdminPage = () => {
               }}
             />
           </Grid>
-          <Grid item sx={{ gridColumn: { xs: 'span 12', md: 'span 6' } }}>
-            <FormControl fullWidth>
-              <InputLabel>Filtrar por estado</InputLabel>
-              <Select
-                value={statusFilter}
-                label="Filtrar por estado"
-                onChange={handleStatusFilterChange}
-              >
-                <MenuItem value="all">Todos</MenuItem>
-                <MenuItem value="pending">Pendiente</MenuItem>
-                <MenuItem value="processing">En proceso</MenuItem>
-                <MenuItem value="shipped">Enviado</MenuItem>
-                <MenuItem value="delivered">Entregado</MenuItem>
-                <MenuItem value="cancelled">Cancelado</MenuItem>
-              </Select>
-            </FormControl>
+          <Grid container spacing={2}>
+            <Grid sx={{ gridColumn: { xs: 'span 12', md: 'span 6' } }}>
+              <FormControl fullWidth>
+                <InputLabel>Filtrar por estado</InputLabel>
+                <Select
+                  value={statusFilter}
+                  label="Filtrar por estado"
+                  onChange={handleStatusFilterChange}
+                >
+                  <MenuItem value="all">Todos</MenuItem>
+                  <MenuItem value="pending">Pendiente</MenuItem>
+                  <MenuItem value="processing">En proceso</MenuItem>
+                  <MenuItem value="shipped">Enviado</MenuItem>
+                  <MenuItem value="delivered">Entregado</MenuItem>
+                  <MenuItem value="cancelled">Cancelado</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
           </Grid>
         </Grid>
       </Paper>

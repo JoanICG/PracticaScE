@@ -15,7 +15,8 @@ import {
   TableHead,
   TableRow,
   CircularProgress,
-  Button
+  Button,
+  Grid
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
@@ -117,45 +118,39 @@ const OrdersPage = () => {
             </AccordionSummary>
             {/* Para hacerlo mas estetico hacemos que pulsando un boton se vean mas detalles sobre el pedido realizado */}
             <AccordionDetails>
-              <Typography variant="subtitle1" gutterBottom>
-                Detalles del pedido:
-              </Typography>
-              <TableContainer component={Paper}>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Producto</TableCell>
-                      <TableCell align="right">Precio unitario</TableCell>
-                      <TableCell align="right">Cantidad</TableCell>
-                      <TableCell align="right">Subtotal</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {order.orderItems.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell>{item.product.name}</TableCell>
-                        <TableCell align="right">
-                          {parseFloat(item.price).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
-                        </TableCell>
-                        <TableCell align="right">{item.quantity}</TableCell>
-                        <TableCell align="right">
-                          {(parseFloat(item.price) * item.quantity).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    <TableRow>
-                      <TableCell colSpan={3} align="right">
-                        <Typography variant="subtitle1">Total:</Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant="subtitle1">
-                          {parseFloat(order.totalAmount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <Grid container spacing={2}>
+                <Grid sx={{ gridColumn: { xs: 'span 12', md: 'span 6' } }}>
+                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                    Detalles del pedido:
+                  </Typography>
+                  <TableContainer component={Paper}>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Producto</TableCell>
+                          <TableCell align="right">Precio unitario</TableCell>
+                          <TableCell align="right">Cantidad</TableCell>
+                          <TableCell align="right">Subtotal</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {order.orderItems.map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell>{item.product.name}</TableCell>
+                            <TableCell align="right">
+                              {parseFloat(item.price).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+                            </TableCell>
+                            <TableCell align="right">{item.quantity}</TableCell>
+                            <TableCell align="right">
+                              {(parseFloat(item.price) * item.quantity).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Grid>
+              </Grid>
             </AccordionDetails>
           </Accordion>
         ))
