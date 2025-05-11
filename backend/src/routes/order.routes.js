@@ -9,6 +9,5 @@ router.use(authMiddleware);
 
 router.post("/create", createOrder);
 router.get("/my-orders", getUserOrders);
-// Remove duplicate route: router.get('/my-orders', authMiddleware, getOrdersByUser);
 
 module.exports = router;

@@ -36,7 +36,7 @@ const ProductSchema = new EntitySchema({
       type: "json",
       nullable: true
     },
-    // Añadir campos de timestamp
+    // Timestamp
     createdAt: {
       type: "timestamp",
       createDate: true,

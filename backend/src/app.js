@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const cookieParser = require("cookie-parser"); // Necesitas instalar: npm install cookie-parser
+const cookieParser = require("cookie-parser"); 
 require("reflect-metadata");
 const { AppDataSource } = require("./config/database");
 
@@ -11,7 +11,7 @@ const cartRoutes = require('./routes/cart.routes');
 const orderRoutes = require('./routes/order.routes');
 const adminRoutes = require('./routes/admin.routes');
 
-// Initialize express app
+// Inicializar express
 const app = express();
 const PORT = process.env.PORT || 4000;
 
@@ -34,7 +34,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Initialize database and start server
+// Crear la base de datos y levantar el servidor
 AppDataSource.initialize()
   .then(() => {
     console.log("Database connection established");

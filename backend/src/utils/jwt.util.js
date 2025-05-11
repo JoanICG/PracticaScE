@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
-// Generate a JWT token
+// Utiidad para generar y verificar tokens JWT
 const generateToken = (userData) => {
   return jwt.sign(
     userData,
@@ -10,7 +10,6 @@ const generateToken = (userData) => {
   );
 };
 
-// Verify a JWT token
 const verifyToken = (token) => {
   return jwt.verify(token, process.env.JWT_SECRET || "your_jwt_secret_key");
 };

@@ -4,7 +4,7 @@ const { AppDataSource } = require('./src/config/database');
 const app = express();
 const PORT = 4000;
 
-// Configuración manual de CORS
+// Configuración de CORS
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', 'http://localhost:3000'); // Permitir solicitudes desde este origen
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // Permitir estos encabezados

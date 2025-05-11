@@ -18,7 +18,6 @@ const AppDataSource = new DataSource({
   logging: process.env.DB_LOGGING === "true",
   entities: [CustomerSchema, ProductSchema, OrderSchema, OrderItemSchema, SparePartSchema],
   migrations: ["src/migrations/**/*.js"],
-  subscribers: ["src/subscribers/**/*.js"], // optional, if you have subscribers 
 });
 
 

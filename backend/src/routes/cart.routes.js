@@ -10,7 +10,7 @@ router.use(authMiddleware);
 
 router.post("/add", addToCart);
 router.get("/", getCart);
-router.put("/update-item", updateCartItem); // Usar el controlador en lugar de la implementación directa
+router.put("/update-item", updateCartItem); 
 
 // Nueva ruta para crear un PaymentIntent
 router.post("/create-payment-intent", async (req, res) => {
@@ -19,7 +19,7 @@ router.post("/create-payment-intent", async (req, res) => {
 
     // Crear un PaymentIntent con el monto total
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(totalAmount * 100), // Convertir a centavos
+      amount: Math.round(totalAmount * 100), 
       currency: "eur",
       payment_method_types: ["card"],
     });
