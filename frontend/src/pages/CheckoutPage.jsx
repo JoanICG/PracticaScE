@@ -19,8 +19,11 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import CheckoutForm from "../components/CheckoutForm";
 
-const steps = ['Dirección de envío', 'Revisar pedido', 'Pedido completado'];
+const steps = ['Dirección de envío', 'Revisar pedido', 'Pago', 'Pedido completado'];
 
 const CheckoutPage = () => {
   const [activeStep, setActiveStep] = useState(0);
@@ -31,6 +34,9 @@ const CheckoutPage = () => {
   const [error, setError] = useState(null);
   const [orderCompleted, setOrderCompleted] = useState(false);
   const navigate = useNavigate();
+  const stripePromise = loadStripe("pk_test_51RMVXe4FE38O7zRrFoDEZ9JKdAdwn9I3jebSGHYr3MgyjyNuROWPyi4UxROyJoFR0PMc9OrLC3ULFJUnO3t4qbeZ006ZtZKmAm");
+  const [clientSecret, setClientSecret] = useState(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   useEffect(() => {
     fetchCart();
@@ -55,8 +61,22 @@ const CheckoutPage = () => {
     }
   };
 
-  const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  const handleNext = async () => {
+    if (activeStep === 1) { // Antes de ir al paso de pago
+      try {
+        // Crear intent de pago
+        const response = await api.post("/cart/create-payment-intent", {
+          totalAmount: cart.totalAmount,
+        });
+        setClientSecret(response.data.clientSecret);
+        setActiveStep((prevActiveStep) => prevActiveStep + 1);
+      } catch (error) {
+        console.error("Error al iniciar el pago:", error);
+        setError("Error al iniciar el pago");
+      }
+    } else {
+      setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    }
   };
 
   const handleBack = () => {
@@ -74,6 +94,28 @@ const CheckoutPage = () => {
       
       await api.post('/orders/create', { shippingAddress });
       
+      setOrderCompleted(true);
+      handleNext();
+    } catch (error) {
+      console.error('Error al crear pedido:', error);
+      setError(error.response?.data?.message || 'Error al procesar el pedido');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handlePaymentSuccess = async (paymentIntentId) => {
+    try {
+      setSubmitting(true);
+      setError(null);
+      
+      // Enviar el ID del PaymentIntent para verificación
+      await api.post('/orders/create', { 
+        shippingAddress,
+        paymentIntentId // Incluir el ID del pago
+      });
+      
+      setPaymentSuccess(true);
       setOrderCompleted(true);
       handleNext();
     } catch (error) {
@@ -180,15 +222,38 @@ const CheckoutPage = () => {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={handleSubmitOrder}
+                onClick={handleNext}
                 disabled={submitting}
               >
-                {submitting ? <CircularProgress size={24} /> : 'Finalizar pedido'}
+                {submitting ? <CircularProgress size={24} /> : 'Siguiente'}
               </Button>
             </Box>
           </Box>
         );
-      case 2:
+      case 2: // Nuevo paso de pago
+        return (
+          <Box sx={{ mt: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Pago
+            </Typography>
+            {clientSecret ? (
+              <Elements stripe={stripePromise} options={{ clientSecret }}>
+                <CheckoutForm 
+                  clientSecret={clientSecret} 
+                  onPaymentSuccess={handlePaymentSuccess}
+                />
+              </Elements>
+            ) : (
+              <CircularProgress />
+            )}
+            <Box sx={{ display: 'flex', justifyContent: 'flex-start', mt: 3 }}>
+              <Button onClick={handleBack}>
+                Volver
+              </Button>
+            </Box>
+          </Box>
+        );
+      case 3:
         return (
           <Box sx={{ mt: 3, textAlign: 'center' }}>
             <Typography variant="h5" gutterBottom>

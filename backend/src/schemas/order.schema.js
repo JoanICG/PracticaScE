@@ -19,6 +19,10 @@ const OrderSchema = new EntitySchema({
       precision: 10,
       scale: 2
     },
+    shippingAddress: {
+      type: "text",
+      nullable: true
+    },
     createdAt: {
       type: Date,
       createDate: true

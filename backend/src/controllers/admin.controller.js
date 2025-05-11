@@ -22,18 +22,18 @@ const getAllUsers = async (req, res) => {
 // Obtener todos los pedidos (excluyendo carritos)
 const getAllOrders = async (req, res) => {
   try {
-    // Utilizar QueryBuilder para mayor flexibilidad en la consulta
     const orderRepository = AppDataSource.getRepository("Order");
     
+    // Modificar la consulta para incluir shippingAddress en la selección
     const orders = await orderRepository
       .createQueryBuilder("order")
-      .leftJoinAndSelect("order.customer", "customer")
       .leftJoinAndSelect("order.orderItems", "orderItems")
       .leftJoinAndSelect("orderItems.product", "product")
-      .where("order.status != :cartStatus", { cartStatus: "cart" })
+      .leftJoinAndSelect("order.customer", "customer")
+      .where("order.status != :status", { status: "cart" })
       .orderBy("order.createdAt", "DESC")
       .getMany();
-
+    
     return res.status(200).json({
       success: true,
       data: { orders }
@@ -42,7 +42,7 @@ const getAllOrders = async (req, res) => {
     console.error("Error al obtener pedidos:", error);
     return res.status(500).json({
       success: false,
-      message: "Error del servidor: " + error.message
+      message: "Error del servidor"
     });
   }
 };

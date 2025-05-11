@@ -137,7 +137,7 @@ const OrdersPage = () => {
   }
 
   return (
-    <Container sx={{ mt: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
         Gestión de Pedidos
       </Typography>
@@ -252,6 +252,48 @@ const OrdersPage = () => {
           <Typography align="center">No se encontraron pedidos</Typography>
         </Paper>
       )}
+
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>Cliente</TableCell>
+              <TableCell>Fecha</TableCell>
+              <TableCell>Estado</TableCell>
+              <TableCell>Total</TableCell>
+              <TableCell>Dirección de envío</TableCell> {/* Nueva columna */}
+              <TableCell>Acciones</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {orders.map((order) => (
+              <TableRow key={order.id}>
+                <TableCell>{order.id}</TableCell>
+                <TableCell>{order.customer?.email || 'N/A'}</TableCell>
+                <TableCell>
+                  {new Date(order.createdAt).toLocaleDateString()}
+                </TableCell>
+                <TableCell>
+                  <OrderStatusBadge status={order.status} />
+                </TableCell>
+                <TableCell>
+                  {parseFloat(order.totalAmount).toLocaleString('es-ES', {
+                    style: 'currency',
+                    currency: 'EUR'
+                  })}
+                </TableCell>
+                <TableCell>
+                  {order.shippingAddress || 'No especificada'}
+                </TableCell>
+                <TableCell>
+                  {/* ... acciones existentes */}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       {/* Diálogo de confirmación */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>

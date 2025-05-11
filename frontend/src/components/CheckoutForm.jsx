@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
-const CheckoutForm = ({ clientSecret }) => {
+const CheckoutForm = ({ clientSecret, onPaymentSuccess }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
@@ -36,12 +36,17 @@ const CheckoutForm = ({ clientSecret }) => {
       setError(error.message);
     } else if (paymentIntent.status === "succeeded") {
       setSuccess(true);
+      if (onPaymentSuccess) {
+        onPaymentSuccess(paymentIntent.id); // Pasar el ID del pago exitoso
+      }
     }
 
     setLoading(false);
   };
 
-  if (success) {
+  // Modificar el renderizado para checkout integrado
+  if (success && !onPaymentSuccess) {
+    // Mostrar el mensaje de éxito solo si no hay función onPaymentSuccess
     return (
       <Paper elevation={3} sx={{ p: 4, textAlign: "center" }}>
         <CheckCircleIcon sx={{ fontSize: 60, color: "green", mb: 2 }} />

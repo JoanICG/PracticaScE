@@ -1,11 +1,13 @@
 const { AppDataSource } = require("../config/database");
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // Crear un pedido a partir del carrito
 const createOrder = async (req, res) => {
   try {
+    const { shippingAddress, paymentIntentId } = req.body;
     const userId = req.user.id;
-    const { shippingAddress } = req.body;
 
+    // Verificar datos requeridos
     if (!shippingAddress) {
       return res.status(400).json({
         success: false,
@@ -13,17 +15,35 @@ const createOrder = async (req, res) => {
       });
     }
 
+    if (!paymentIntentId) {
+      return res.status(400).json({
+        success: false,
+        message: "El ID del pago es requerido"
+      });
+    }
+
+    // Verificar el estado del pago directamente con Stripe
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    
+    if (paymentIntent.status !== 'succeeded') {
+      return res.status(400).json({
+        success: false,
+        message: "El pago no ha sido completado correctamente"
+      });
+    }
+
     const orderRepository = AppDataSource.getRepository("Order");
     const productRepository = AppDataSource.getRepository("Product");
 
-    // Obtener carrito del usuario
-    const cart = await orderRepository.findOne({
-      where: { 
-        customer: { id: userId },
-        status: "cart" 
-      },
-      relations: ["orderItems", "orderItems.product"]
-    });
+    // Obtener el carrito del usuario
+    const cart = await orderRepository
+      .createQueryBuilder("order")
+      .leftJoinAndSelect("order.orderItems", "orderItems")
+      .leftJoinAndSelect("orderItems.product", "product")
+      .leftJoinAndSelect("order.customer", "customer")
+      .where("customer.id = :userId", { userId })
+      .andWhere("order.status = :status", { status: "cart" })
+      .getOne();
 
     if (!cart || cart.orderItems.length === 0) {
       return res.status(400).json({

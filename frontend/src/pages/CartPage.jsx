@@ -70,18 +70,11 @@ const CartPage = () => {
     }
   };
   
-  const handleCheckout = async () => {
-    try {
-      const response = await api.post("/cart/create-payment-intent", {
-        totalAmount: cart.totalAmount,
-      });
-      console.log("Client Secret:", response.data.clientSecret); // Verificar el clientSecret
-      setClientSecret(response.data.clientSecret);
-    } catch (error) {
-      console.error("Error al iniciar el pago:", error);
-      alert("Error al iniciar el pago");
-    }
+  const handleCheckout = () => {
+    // Solo navegar a la página de checkout
+    navigate('/checkout');
   };
+
   if (loading) {
     return (
       <Container sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
@@ -95,14 +88,6 @@ const CartPage = () => {
       <Container sx={{ mt: 4 }}>
         <Typography color="error">{error}</Typography>
       </Container>
-    );
-  }
-
-  if (clientSecret) {
-    return (
-      <Elements stripe={stripePromise} options={{ clientSecret }}>
-        <CheckoutForm clientSecret={clientSecret}/>
-      </Elements>
     );
   }
 
