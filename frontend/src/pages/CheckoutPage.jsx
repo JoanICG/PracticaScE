@@ -215,7 +215,7 @@ const CheckoutPage = () => {
                   </ListItem>
                 </List>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item sx={{ gridColumn: { xs: 'span 12', md: 'span 6' } }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                   Dirección de envío
                 </Typography>

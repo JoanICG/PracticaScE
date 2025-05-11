@@ -140,7 +140,7 @@ const ProductsPage = () => {
       <Grid container spacing={2}>
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
-            <Grid xs={6} sm={4} md={3} lg={2} key={product.id}>
+            <Grid sx={{ gridColumn: { xs: 'span 6', sm: 'span 4', md: 'span 3', lg: 'span 2' } }} key={product.id}>
               <Card 
                 sx={{ 
                   height: '100%', 

@@ -35,7 +35,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SearchIcon from '@mui/icons-material/Search';
 import InfoIcon from '@mui/icons-material/Info';
 import api from '../../services/api';
-// Pagina el qual tiene el administrador para gestionar los pedidos, puede cambiar los estados de los pedidos
+// Pagina el cual tiene el administrador para gestionar los pedidos, puede cambiar los estados de los pedidos
 
 // Variables de estado para la pagina de pedidos
 const OrdersAdminPage = () => {
@@ -204,7 +204,7 @@ const OrdersAdminPage = () => {
               }}
             />
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item sx={{ gridColumn: { xs: 'span 12', md: 'span 6' } }}>
             <FormControl fullWidth>
               <InputLabel>Filtrar por estado</InputLabel>
               <Select

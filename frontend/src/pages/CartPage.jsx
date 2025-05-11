@@ -18,7 +18,11 @@ import {
   IconButton,
   TextField,
   Divider,
-  Badge
+  Badge,
+  Grid,
+  List,
+  ListItem,
+  ListItemText
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -207,6 +211,27 @@ const CartPage = () => {
                 {parseFloat(cart.totalAmount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
               </Typography>
             </Box>
+            <Grid item sx={{ gridColumn: { xs: 'span 12', md: 'span 6' } }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                Productos
+              </Typography>
+              <List>
+                {cart.orderItems.map((item) => (
+                  <ListItem key={item.id} sx={{ py: 1, px: 0 }}>
+                    <ListItemText
+                      primary={item.product.name}
+                      secondary={`Cantidad: ${item.quantity}`}
+                    />
+                    <Typography variant="body2">
+                      {(parseFloat(item.price) * item.quantity).toLocaleString('es-ES', { 
+                        style: 'currency', 
+                        currency: 'EUR' 
+                      })}
+                    </Typography>
+                  </ListItem>
+                ))}
+              </List>
+            </Grid>
             {/*Boton que se encarga de redirigirte a la pagina checkout*/}
             <Button 
               variant="contained" 

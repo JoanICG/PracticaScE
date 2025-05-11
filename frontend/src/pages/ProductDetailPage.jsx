@@ -107,7 +107,7 @@ const ProductDetailPage = () => {
       
       <Grid container spacing={4}>
         {/* Imagen del producto */}
-        <Grid xs={12} md={6}>
+        <Grid item sx={{ gridColumn: { xs: 'span 12', md: 'span 6' } }}>
           <Paper 
             elevation={1}
             sx={{ 
