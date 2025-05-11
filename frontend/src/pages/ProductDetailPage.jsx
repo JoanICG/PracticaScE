@@ -107,7 +107,7 @@ const ProductDetailPage = () => {
       
       <Grid container spacing={4}>
         {/* Imagen del producto */}
-        <Grid item xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Paper 
             elevation={1}
             sx={{ 
@@ -131,7 +131,7 @@ const ProductDetailPage = () => {
         </Grid>
         
         {/* Información del producto */}
-        <Grid item xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Typography variant="h4" component="h1" gutterBottom>
             {product.name}
           </Typography>
@@ -188,7 +188,7 @@ const ProductDetailPage = () => {
         </Grid>
         
         {/* Descripción detallada */}
-        <Grid item xs={12}>
+        <Grid xs={12}>
           <Divider sx={{ my: 4 }} />
           <Typography variant="h5" component="h2" gutterBottom>
             Descripción
@@ -206,7 +206,7 @@ const ProductDetailPage = () => {
         
         {/* Especificaciones técnicas */}
         {product.specifications && (
-          <Grid item xs={12}>
+          <Grid xs={12}>
             <Typography variant="h5" component="h2" gutterBottom sx={{ mt: 2 }}>
               Especificaciones técnicas
             </Typography>
@@ -228,7 +228,7 @@ const ProductDetailPage = () => {
         )}
 
         {/* Repuestos compatibles */}
-        <Grid item xs={12}>
+        <Grid xs={12}>
           <Box mt={5}>
             <Typography variant="h5" gutterBottom fontWeight="bold">
               Repuestos compatibles

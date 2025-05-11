@@ -1,14 +1,20 @@
 const express = require('express');
-const cors = require('cors');
 const { AppDataSource } = require('./src/config/database');
 
 const app = express();
 const PORT = 4000;
 
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true
-}));
+// Configuración manual de CORS
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:3000'); // Permitir solicitudes desde este origen
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // Permitir estos encabezados
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS'); // Métodos permitidos
+  res.header('Access-Control-Allow-Credentials', 'true'); // Permitir cookies y credenciales
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204); // Responder rápidamente a las solicitudes OPTIONS
+  }
+  next();
+});
 
 app.use(express.json());
 

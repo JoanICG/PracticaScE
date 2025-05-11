@@ -140,7 +140,7 @@ const ProductsPage = () => {
       <Grid container spacing={2}>
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
-            <Grid item xs={6} sm={4} md={3} lg={2} key={product.id}>
+            <Grid xs={6} sm={4} md={3} lg={2} key={product.id}>
               <Card 
                 sx={{ 
                   height: '100%', 
@@ -251,7 +251,7 @@ const ProductsPage = () => {
             </Grid>
           ))
         ) : (
-          <Grid item xs={12}>
+          <Grid xs={12}>
             <Typography align="center">No se encontraron productos</Typography>
           </Grid>
         )}
