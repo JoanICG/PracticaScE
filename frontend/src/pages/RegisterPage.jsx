@@ -1,6 +1,6 @@
 import { Box, Container, Typography } from '@mui/material';
 import RegisterForm from '../components/auth/RegisterForm';
-
+// Pagina de registro del usuario donde llamaremos al formulario de registros llamado "RegisterForm"
 const RegisterPage = () => {
   return (
     <Container maxWidth="sm">

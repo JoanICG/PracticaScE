@@ -21,21 +21,24 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-
+//Esta pagina se encarga de mostrar los pedidos que ha realizado el usuario
+//Variables de estado sobre la pagina de mis pedidos
 const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-
+  //Llamada a la API para obtener los pedidos
   useEffect(() => {
     fetchOrders();
   }, []);
-
+  // Funcion para obtener los pedidos que pedios al Backend
   const fetchOrders = async () => {
     try {
       setLoading(true);
+      // Pedimos nustros pedidos al backend
       const response = await api.get('/orders/my-orders');
+      // Si la respuesta es correcta, guardamos los pedidos en el estado
       setOrders(response.data.data.orders);
       setLoading(false);
     } catch (error) {
@@ -44,7 +47,7 @@ const OrdersPage = () => {
       setLoading(false);
     }
   };
-
+  // Para hacerlo mas estetico lo que hemos echo es que dependiendo del estado del pedido cambiamos el color dentro de la pagina
   const getStatusColor = (status) => {
     switch (status) {
       case 'pending': return 'warning';
@@ -55,7 +58,7 @@ const OrdersPage = () => {
       default: return 'default';
     }
   };
-
+  // Por otro lado cambiaremos el estado de ingles a español para hacerlo mas estetico
   const getStatusLabel = (status) => {
     switch (status) {
       case 'pending': return 'Pendiente';
@@ -66,7 +69,7 @@ const OrdersPage = () => {
       default: return status;
     }
   };
-
+  // Como en los otros programas en caso de estar cargando o de algun error hacemos estos dos if
   if (loading) {
     return (
       <Container sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
@@ -82,7 +85,7 @@ const OrdersPage = () => {
       </Container>
     );
   }
-
+  // Estilo elegido para hacer la pagina de mis pedidos estitca
   return (
     <Container sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
@@ -99,6 +102,8 @@ const OrdersPage = () => {
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <Chip 
+                    // En este caso hacemos que dependiendo del estado que nos devuelva el backend, se le asigne un color diferente
+                    // y un texto diferente
                     label={getStatusLabel(order.status)} 
                     color={getStatusColor(order.status)} 
                     size="small" 
@@ -110,6 +115,7 @@ const OrdersPage = () => {
                 </Box>
               </Box>
             </AccordionSummary>
+            {/* Para hacerlo mas estetico hacemos que pulsando un boton se vean mas detalles sobre el pedido realizado */}
             <AccordionDetails>
               <Typography variant="subtitle1" gutterBottom>
                 Detalles del pedido:

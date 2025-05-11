@@ -19,7 +19,12 @@ import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+//En primer lugar esta es la pagina de productos el qual seria la pagina principal de la tienda, donde se mostraran todos los productos disponibles en la tienda.
 
+// Aqui añadimos els hooks de react pedidos para el funcionamiento de la pagina
+// Aqui tenemos la variables d'estados que nos ayudaran a gestionar la pagina
+// podemos ver que todas estan en null o vacias, ya que no tienen un valor inicial sino 
+// que es necessario modificar de forma dinamica su estado en otro momento
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -29,13 +34,20 @@ const ProductsPage = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
+  //Utilizamos este hook para obtener los productos del backend.
   useEffect(() => {
+    //esta funcion asincrona nos permite hace solicitudes HTTP al backend para obtener la lista de productos
     const fetchProducts = async () => {
       try {
+        // Solicitud GET para obtener la lista
         const response = await api.get('/products');
+        // Actualizamos el estado de los productos con la respuesta del backend
         setProducts(response.data.data.products);
+        // En caso de haver un filtro o busqueda, actualizamos el estado de los productos filtrados
         setFilteredProducts(response.data.data.products);
+        // Cambiamos el estado de carga
         setLoading(false);
+        // En caso de haver un error, actualizamos el estado de error
       } catch (error) {
         console.error('Error al obtener productos:', error);
         setError('Error al cargar los productos');
@@ -44,10 +56,14 @@ const ProductsPage = () => {
     };
 
     fetchProducts();
+  // Como podemos ver este hook solo se ejecutara una sola vez para cargar los productos
   }, []);
-
+  // Hook para los productos filtrados
   useEffect(() => {
+    // Se activa en el momento que el usuario hace una busqueda
+    // i almacena el resultado en serchTerm
     if (searchTerm) {
+      // Como tenemos filtro, usamos la siguiente metodologia para filtrar
       const filtered = products.filter(product => 
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
         product.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -61,16 +77,18 @@ const ProductsPage = () => {
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
-
+  // Funcion en caso de querer añadir un producto al carrito
   const handleAddToCart = async (productId) => {
+    // En caso de no estar verificada se redirige a la pagina de login
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
-
+    // En caso de estar verificada se hace una peticion al backend para añadir el producto al carrito del usuario
     try {
       await api.post('/cart/add', {
         productId,
+        // Decision de disenyo "Como no podemos añadir la cantidad de producto quiere decir que cada vez que se pulse el boton solo se añadira una vez"
         quantity: 1
       });
       alert('Producto añadido al carrito');
@@ -79,7 +97,7 @@ const ProductsPage = () => {
       alert(error.response?.data?.message || 'Error al añadir al carrito');
     }
   };
-
+  // En caso de cargar productos tenemos que mostrar un loading que esta echo en Material UI
   if (loading) {
     return (
       <Container sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
@@ -87,7 +105,7 @@ const ProductsPage = () => {
       </Container>
     );
   }
-
+  // En caso de error al cargar los productos, se muestra un mensaje de error
   if (error) {
     return (
       <Container sx={{ mt: 4 }}>
@@ -95,7 +113,7 @@ const ProductsPage = () => {
       </Container>
     );
   }
-
+  // Esilo elegido par hacer la pagina de productos al estilo Amazon
   return (
     <Container maxWidth="xl" sx={{ mt: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom>
@@ -107,6 +125,7 @@ const ProductsPage = () => {
           fullWidth
           variant="outlined"
           label="Buscar productos"
+          // En el campo de busqueda en estas dos variables se alamazenara el valor
           value={searchTerm}
           onChange={handleSearchChange}
           InputProps={{
@@ -118,8 +137,6 @@ const ProductsPage = () => {
           }}
         />
       </Box>
-
-      {/* Estilo tipo Amazon */}
       <Grid container spacing={2}>
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
@@ -151,6 +168,7 @@ const ProductsPage = () => {
                       objectFit: 'contain',
                       p: 1
                     }}
+                    // En caso de tener imagen ponemos la que hay o sino una por defecto
                     image={product.imageUrl || 'https://via.placeholder.com/300x300?text=Coche+Teledirigido'}
                     alt={product.name}
                   />
@@ -219,6 +237,7 @@ const ProductsPage = () => {
                       }
                     }}
                     startIcon={<AddShoppingCartIcon />}
+                    // Botton para añadir al carrito
                     onClick={(e) => {
                       e.stopPropagation();
                       handleAddToCart(product.id);

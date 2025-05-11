@@ -10,8 +10,10 @@ import {
 } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+// Formulario para el registro de un usuario
 
 const RegisterForm = () => {
+  // Variables de estado para el formulario
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -22,7 +24,7 @@ const RegisterForm = () => {
   const { register, login, isLoading, error } = useAuth();
   const navigate = useNavigate();
 
-  // Manejar cambio en inputs
+  // Para el cambio de valores en el formulario tenemos esta funcion
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -33,47 +35,50 @@ const RegisterForm = () => {
     }
   };
 
-  // Validar formulario
+  // Funcion para validor el formulario
   const validateForm = () => {
     const errors = {};
-    
+    // Comprobamos si han puesto nombre
     if (!formData.name) {
       errors.name = 'El nombre es obligatorio';
     }
-    
+    // Comprobamos si han puesto email
     if (!formData.email) {
       errors.email = 'El email es obligatorio';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       errors.email = 'Email inválido';
     }
-    
+    // Comprobamos si han puesto contraseña
     if (!formData.password) {
       errors.password = 'La contraseña es obligatoria';
     } else if (formData.password.length < 6) {
       errors.password = 'La contraseña debe tener al menos 6 caracteres';
     }
-    
+    // Comprobamos si han puesto confirmación de contraseña
     if (!formData.confirmPassword) {
       errors.confirmPassword = 'Por favor confirma tu contraseña';
     } else if (formData.password !== formData.confirmPassword) {
       errors.confirmPassword = 'Las contraseñas no coinciden';
     }
-    
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  // Manejar envío del formulario
+  // Funcion para enviar el formulario de registro
   const handleSubmit = async (e) => {
+    // Evitamos que se recargue la pagina
     e.preventDefault();
-    
+    // Primero validamos si el usuario ha puesto correctamente los datos
     if (!validateForm()) return;
     
-    // Eliminar confirmPassword de los datos enviados a la API
+    // Ya que no necessitamos el confirmPassword para el registro lo eliminamos
     const { confirmPassword, ...registerData } = formData;
     
     try {
+      // Enviamos el formulario de registro al backend
       await register(registerData);
+      // Para que el usuario despues no se tenga que logear, directamente lo logeamos
+      // Cogemos los datos que el usuario nos ha facilitado para logearlo
       const loginData = {
         email: registerData.email,
         password: registerData.password
@@ -89,7 +94,7 @@ const RegisterForm = () => {
       console.error('Error de registro:', error.message);
     }
   };
-
+  // Formulario utilizado para el registro
   return (
     <Paper elevation={3} sx={{ p: 4, maxWidth: 400, mx: 'auto' }}>
       <Typography variant="h4" component="h1" gutterBottom align="center">

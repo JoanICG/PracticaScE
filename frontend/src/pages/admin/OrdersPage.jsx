@@ -29,7 +29,9 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import api from '../../services/api';
+// Pagina el qual tiene el administrador para gestionar los pedidos, puede cambiar los estados de los pedidos
 
+// Variables de estado para la pagina de pedidos
 const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
@@ -44,10 +46,12 @@ const OrdersPage = () => {
   useEffect(() => {
     fetchOrders();
   }, []);
-
+  // Funcion que se encarga de pedir al backend la informacion de los pedidos
   const fetchOrders = async () => {
     try {
+      // Pedimos al backend que nos de toda la informacion de los pedidos
       const response = await api.get('/admin/orders');
+      // Añadimos la lista de pedidos a un estado local
       setOrders(response.data.data.orders);
       setFilteredOrders(response.data.data.orders);
       setLoading(false);
@@ -57,37 +61,44 @@ const OrdersPage = () => {
       setLoading(false);
     }
   };
-
+  // En caso de que haya un cambio en la busqueda o en los pedidos accedemos
   useEffect(() => {
+    // En caso de que el administrador busque un pedido
     if (searchTerm) {
+      // Filtramos los pedidos dependiendo de la busqueda
       const filtered = orders.filter(order => 
         order.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
         order.customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.id.includes(searchTerm)
       );
+      // Guardamos el array de pedidos filtrados
       setFilteredOrders(filtered);
     } else {
       setFilteredOrders(orders);
     }
   }, [searchTerm, orders]);
-
+  // Cambiamos el estado de la busqueda
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
-
+  // Cambiamos el estado del pedido, de forma local
   const handleStatusChange = (orderId, status) => {
     setSelectedOrderId(orderId);
     setNewStatus(status);
     setDialogOpen(true);
   };
-
+  // Cambiamos el estado del pedido en el backend i en caso de error lo mostramos en un popup
   const handleConfirmStatusChange = async () => {
     try {
+
       setStatusUpdateLoading(true);
+      // Enviamos la peticion al backend para cambiar el estado del pedido
       await api.put('/admin/orders/update-status', {
         orderId: selectedOrderId,
         status: newStatus
       });
+      // Como hemos cambiado el estado volvemos a pedir al backend la lista de pedidos ya que el estado de ese pedido
+      // debera de cambiar
       await fetchOrders();
       setDialogOpen(false);
     } catch (error) {
@@ -97,7 +108,8 @@ const OrdersPage = () => {
       setStatusUpdateLoading(false);
     }
   };
-
+  // Como en los pedidos del usuario no administrador aqui hemos echo lo mismo, 
+  // cambiamos el color i el texto dependiendo del estado del pedido
   const getStatusColor = (status) => {
     switch (status) {
       case 'pending': return 'warning';
@@ -135,13 +147,13 @@ const OrdersPage = () => {
       </Container>
     );
   }
-
+  // Estilo ultilidado en la pagina de pedidos del administrador
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
         Gestión de Pedidos
       </Typography>
-
+      {/* Campo de búsqueda */}
       <Box sx={{ mb: 2 }}>
         <TextField
           fullWidth
@@ -151,7 +163,7 @@ const OrdersPage = () => {
           onChange={handleSearchChange}
         />
       </Box>
-
+      {/* Mostrar pedidos filtrados */}
       {filteredOrders.length > 0 ? (
         filteredOrders.map((order) => (
           <Accordion key={order.id} sx={{ mb: 2 }}>
@@ -161,6 +173,7 @@ const OrdersPage = () => {
                   Pedido: {order.id.substring(0, 8)}... - Cliente: {order.customer.name}
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  {/* Dependiendo del estado se modificara el CSS */}
                   <Chip 
                     label={getStatusLabel(order.status)} 
                     color={getStatusColor(order.status)} 
@@ -173,6 +186,8 @@ const OrdersPage = () => {
                 </Box>
               </Box>
             </AccordionSummary>
+            {/* En el caso de que el administrador quiera ver mas detalles accederiamos aqui
+            para ver todos los detalles del pedido*/}
             <AccordionDetails>
               <Box sx={{ mb: 2 }}>
                 <Typography variant="subtitle1" fontWeight="bold">
@@ -224,7 +239,7 @@ const OrdersPage = () => {
                   </TableBody>
                 </Table>
               </TableContainer>
-
+              {/* Box para cambiar el estado del pedido */}
               <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="subtitle1">Cambiar estado:</Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -262,7 +277,7 @@ const OrdersPage = () => {
               <TableCell>Fecha</TableCell>
               <TableCell>Estado</TableCell>
               <TableCell>Total</TableCell>
-              <TableCell>Dirección de envío</TableCell> {/* Nueva columna */}
+              <TableCell>Dirección de envío</TableCell>
               <TableCell>Acciones</TableCell>
             </TableRow>
           </TableHead>
@@ -287,7 +302,6 @@ const OrdersPage = () => {
                   {order.shippingAddress || 'No especificada'}
                 </TableCell>
                 <TableCell>
-                  {/* ... acciones existentes */}
                 </TableCell>
               </TableRow>
             ))}

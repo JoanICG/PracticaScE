@@ -2,7 +2,7 @@ import { Button } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-
+// Funcion sencilla para cerrar sesion
 const LogoutButton = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();

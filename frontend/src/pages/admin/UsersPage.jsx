@@ -17,7 +17,8 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import api from '../../services/api';
-
+// Pagina del administrador para gestionar los usuarios
+// Variables de estado para la pagina de usuarios
 const UsersPage = () => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
@@ -28,22 +29,17 @@ const UsersPage = () => {
   useEffect(() => {
     fetchUsers();
   }, []);
-
+  // Funcion que se encarga de pedir al backend la informacion de los usuarios
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      // Pedimos al backend que nos de toda la informacion de los usuarios
       const response = await api.get('/admin/users');
       
-      // Verificar que la respuesta tenga la estructura esperada
-      if (response.data && response.data.success && response.data.data && response.data.data.users) {
-        setUsers(response.data.data.users);
-        setFilteredUsers(response.data.data.users);
-      } else {
-        // Si la respuesta no tiene la estructura esperada, establecer un array vacío
-        setUsers([]);
-        setFilteredUsers([]);
-        setError('La respuesta del servidor no tiene el formato esperado');
-      }
+      // Obtenemos la lista de los usuarios i los guardamos en un estado local
+      setUsers(response.data.data.users);
+      setFilteredUsers(response.data.data.users);
+
     } catch (error) {
       console.error('Error al obtener usuarios:', error);
       setError('Error al cargar los usuarios: ' + (error.response?.data?.message || error.message));
@@ -54,26 +50,30 @@ const UsersPage = () => {
       setLoading(false);
     }
   };
-
+  // En caso de que cambie de estado el usuario o la variable de busqueda el que hacemos es mostrar
+  // los usuarios dependiendo de la busqueda
   useEffect(() => {
-    // Si users es undefined o null, usar un array vacío para evitar errores
+    // Añadimos un array para evitar errors en caso de que haya algun error en los usuarios
     const usersArray = users || [];
-    
+    // En caso de tener una busqueda entramos en el if
     if (searchTerm) {
+      // Filtramos los usuarios dependiendo de la busqueda
       const filtered = usersArray.filter(user => 
         user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email?.toLowerCase().includes(searchTerm.toLowerCase())
       );
+      // Guardamos el array de usuarios filtrados
       setFilteredUsers(filtered);
     } else {
+      // En caso de no haver el que hacemos es mostrar una lista vacia
       setFilteredUsers(usersArray);
     }
   }, [users, searchTerm]);
-
+  // Modifiacion de la variable de busqueda
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
-
+  // En caso de estar cargando o de haver un error mostramos un loading o un error
   if (loading) {
     return (
       <Container sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
@@ -90,7 +90,7 @@ const UsersPage = () => {
     );
   }
 
-  // Asegurar que filteredUsers siempre sea un array para evitar errores
+  // Filtro de usuarios para mostrar solo los que coinciden con la busqueda, utilizamos esto para los errores de renderizado
   const usersToDisplay = Array.isArray(filteredUsers) ? filteredUsers : [];
 
   return (
@@ -105,6 +105,7 @@ const UsersPage = () => {
           label="Buscar usuario"
           value={searchTerm}
           onChange={handleSearchChange}
+          // Icono de busqueda
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">

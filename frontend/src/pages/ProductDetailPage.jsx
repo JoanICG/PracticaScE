@@ -21,23 +21,28 @@ import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import SparePart from '../components/SparePart';
+// Pagina de detalles del producto
 
+// Variables d'estado que utilizaremos en la pagina de detalles de productos
 const ProductDetailPage = () => {
-  const { productId } = useParams();
+  const { productId } = useParams();  // Es un hook que nos permite acceder a los parametros de la URL
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
+  // useEffect que nos permite obtener la informacion del producto pedido
   useEffect(() => {
     const fetchProductDetails = async () => {
+      // Cambiamos el estado a cargando
       setLoading(true);
       try {
+        // Llamamos a la API para obtener los detalles del producto
         const response = await api.get(`/products/${productId}`);
-        
-        // Los repuestos ya deberían venir incluidos gracias a los cambios en el backend
+        // Guardamos la informacion dicha por el backend en esta variable d'estado
         setProduct(response.data.data.product);
+        // En caso de error:
       } catch (error) {
         console.error('Error al obtener detalles del producto:', error);
         setError('No se pudo cargar la información del producto');
@@ -47,15 +52,18 @@ const ProductDetailPage = () => {
     };
 
     fetchProductDetails();
+    // Esto se ara cada vez que el id del producto cambie
   }, [productId]);
 
   const handleAddToCart = async () => {
+    // En caso de no estar autenticado, redirigimos al usuario a la pagina de login
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
 
     try {
+      // En caso de estar autenticado, llamamos a la API para añadir el producto al carrito
       await api.post('/cart/add', {
         productId,
         quantity: 1
@@ -66,7 +74,7 @@ const ProductDetailPage = () => {
       alert(error.response?.data?.message || 'Error al añadir al carrito');
     }
   };
-
+  // Misma funcion que en el ProductListPage.jsx para mostrar el circular progress
   if (loading) {
     return (
       <Container sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
@@ -74,7 +82,7 @@ const ProductDetailPage = () => {
       </Container>
     );
   }
-
+  // Mensaje de error en caso de no poder mostrar los detalles del producto
   if (error || !product) {
     return (
       <Container sx={{ mt: 4 }}>
@@ -85,9 +93,10 @@ const ProductDetailPage = () => {
       </Container>
     );
   }
-
+  // Estilo elegido para hacer la pagina de detalles del producto
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
+      {/*Boton para volver a la pagina principal*/}
       <Button 
         startIcon={<ArrowBackIcon />} 
         onClick={() => navigate('/products')}
@@ -161,6 +170,7 @@ const ProductDetailPage = () => {
             size="large"
             fullWidth
             startIcon={<AddShoppingCartIcon />}
+            // funcion para añadir el producto al carrito
             onClick={handleAddToCart}
             disabled={product.stock <= 0}
             sx={{

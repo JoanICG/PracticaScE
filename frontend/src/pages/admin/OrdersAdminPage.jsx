@@ -35,7 +35,9 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SearchIcon from '@mui/icons-material/Search';
 import InfoIcon from '@mui/icons-material/Info';
 import api from '../../services/api';
+// Pagina el qual tiene el administrador para gestionar los pedidos, puede cambiar los estados de los pedidos
 
+// Variables de estado para la pagina de pedidos
 const OrdersAdminPage = () => {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
@@ -54,11 +56,14 @@ const OrdersAdminPage = () => {
   useEffect(() => {
     fetchOrders();
   }, []);
-
+  // Funcion que se encarga de pedir al backend la informacion de los pedidos
   const fetchOrders = async () => {
     try {
+      // Cambiamos la variable de estado de loading
       setLoading(true);
+      // Pedimos al backend que nos de toda la informacion de los pedidos
       const response = await api.get('/admin/orders');
+      // Si la respuesta es correcta, guardamos los pedidos en el estado
       setOrders(response.data.data.orders);
       setFilteredOrders(response.data.data.orders);
       setLoading(false);
@@ -72,57 +77,57 @@ const OrdersAdminPage = () => {
   useEffect(() => {
     // Filtrar por término de búsqueda y estado
     let filtered = orders;
-    
     // Filtrar por estado si no es "all"
     if (statusFilter !== 'all') {
       filtered = filtered.filter(order => order.status === statusFilter);
     }
-    
-    // Filtrar por término de búsqueda
+    // En caso de que tengamos una busqueda, entramos en el if
     if (searchTerm) {
+      // Filtramos los pedidos dependiendo de la busqueda
       filtered = filtered.filter(order => 
         (order.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (order.customer?.email?.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (order.id.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
-    
+    // Guardamos el array de pedidos filtrados
     setFilteredOrders(filtered);
   }, [orders, searchTerm, statusFilter]);
-
+  // Modificacion de la variable de busqueda
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
-
+  // Modificacion de la variable de busqueda
   const handleStatusFilterChange = (e) => {
     setStatusFilter(e.target.value);
   };
-
+  // Funcion que se encarga de abrir el dialogo para cambiar el estado del pedido
   const handleOpenStatusDialog = (orderId, currentStatus) => {
     setSelectedOrderId(orderId);
     setSelectedStatus(currentStatus);
     setOpenDialog(true);
   };
-
+  // Funcion que se encarga de cerrar el dialogo para cambiar el estado del pedido
   const handleCloseDialog = () => {
     setOpenDialog(false);
   };
-
+  // Funcion que se encarga de modificar el estado del pedido
   const handleUpdateOrderStatus = async () => {
     try {
       setLoadingUpdate(true);
-      const response = await api.put('/admin/orders/update-status', {
+      // Cambiamos el estado del pedido
+      await api.put('/admin/orders/update-status', {
         orderId: selectedOrderId,
         status: selectedStatus
       });
       
-      // Actualizar la lista de pedidos con el nuevo estado
+      // Directamente actaulizamos el estado de los pedidos en la interfaz
       setOrders(prevOrders =>
         prevOrders.map(order =>
           order.id === selectedOrderId ? {...order, status: selectedStatus} : order
         )
       );
-      
+      // Mostramos un mensaje de exito en el snackbar
       setSnackbarMessage('Estado del pedido actualizado correctamente');
       setSnackbarSeverity('success');
       setOpenSnackbar(true);
@@ -136,7 +141,8 @@ const OrdersAdminPage = () => {
       setLoadingUpdate(false);
     }
   };
-
+  // Como en los pedidos del usuario no administrador aqui hemos echo lo mismo, 
+  // cambiamos el color i el texto dependiendo del estado del pedido
   const getStatusLabel = (status) => {
     switch(status) {
       case 'pending': return 'Pendiente';

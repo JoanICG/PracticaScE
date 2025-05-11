@@ -27,9 +27,8 @@ import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-
-const stripePromise = loadStripe("pk_test_51RMVXe4FE38O7zRrFoDEZ9JKdAdwn9I3jebSGHYr3MgyjyNuROWPyi4UxROyJoFR0PMc9OrLC3ULFJUnO3t4qbeZ006ZtZKmAm");
-
+// Es la pagina del carrito donde podremos ver que productos hemos añadido para despues comprarlos
+// Conjunta de variables d'estado para el carrito
 const CartPage = () => {
   const [cart, setCart] = useState({ orderItems: [], totalAmount: 0 });
   const [loading, setLoading] = useState(true);
@@ -42,11 +41,16 @@ const CartPage = () => {
     fetchCart();
   }, []);
 
+  // Funcion que se encarga de pedir al backend la informacion del carrito
   const fetchCart = async () => {
     try {
+      // Cambiamos la variable de estado de loading
       setLoading(true);
+      // Pedimos al backend que nos de la informacion del carrito
       const response = await api.get('/cart');
+      // Cogemos la lista de productos que ha añadido el usuario
       setCart(response.data.data.cart);
+      // Modificamos la variable d'estado de loading
       setLoading(false);
     } catch (error) {
       console.error('Error al obtener carrito:', error);
@@ -54,27 +58,28 @@ const CartPage = () => {
       setLoading(false);
     }
   };
-
+  // Modificacion o eliminacion del producto al carrito
   const handleUpdateQuantity = async (itemId, newQuantity) => {
     try {
+      // En caso de modificar la cuantidad de un produto o querer eliminar añadimos este put
+      // para modificar la cantidad del producto al backend
       const response = await api.put('/cart/update-item', {
-        itemId: itemId,         // Asegúrate de usar exactamente este nombre
-        quantity: newQuantity   // Asegúrate de usar exactamente este nombre
+        itemId: itemId,       
+        quantity: newQuantity 
       });
       
-      // Actualizar el estado local con la respuesta
+      // Modificamos la lista de productos localmente
       setCart(response.data.data.cart);
     } catch (error) {
       console.error('Error al actualizar la cantidad:', error);
       alert(error.response?.data?.message || 'Error al actualizar el carrito');
     }
   };
-  
+  // Funcion que nos redirige a la pagina de checkout para realizar la compra  
   const handleCheckout = () => {
-    // Solo navegar a la página de checkout
     navigate('/checkout');
   };
-
+  // Funcion que se encarga de que si la variable loading es true nos muestre un loading
   if (loading) {
     return (
       <Container sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
@@ -82,7 +87,7 @@ const CartPage = () => {
       </Container>
     );
   }
-
+  // Funciuon que se encarga de que si hay un error nos muestre el error
   if (error) {
     return (
       <Container sx={{ mt: 4 }}>
@@ -90,7 +95,7 @@ const CartPage = () => {
       </Container>
     );
   }
-
+  // Este es el estilo utilizado para la pagina del carrito
   return (
     <Container sx={{ mt: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom>
@@ -139,12 +144,13 @@ const CartPage = () => {
                     </TableCell>
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {/*Boton el qual llama a la funcio para modificar el estado del producto*/}
                         <IconButton 
                           size="small" 
                           onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
                           disabled={updating}
                         >
-                          <RemoveIcon fontSize="small" />
+                          <RemoveIcon fontSize="small" />                          
                         </IconButton>
                         <TextField
                           size="small"
@@ -152,6 +158,7 @@ const CartPage = () => {
                           disabled
                           sx={{ width: 50, mx: 1, '& input': { textAlign: 'center' } }}
                         />
+                        {/*Boton el qual llama a la funcio para modificar el estado del producto*/}
                         <IconButton 
                           size="small" 
                           onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
@@ -165,6 +172,7 @@ const CartPage = () => {
                       {(parseFloat(item.price) * item.quantity).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
                     </TableCell>
                     <TableCell align="right">
+                      {/*Boton que elimina el producto de la lista*/}
                       <IconButton 
                         color="error" 
                         onClick={() => handleUpdateQuantity(item.id, 0)}
@@ -199,6 +207,7 @@ const CartPage = () => {
                 {parseFloat(cart.totalAmount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
               </Typography>
             </Box>
+            {/*Boton que se encarga de redirigirte a la pagina checkout*/}
             <Button 
               variant="contained" 
               fullWidth 

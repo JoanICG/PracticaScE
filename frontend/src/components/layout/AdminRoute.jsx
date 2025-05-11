@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { Box, CircularProgress } from '@mui/material';
-
+// Es exactamente igual que el ProtectedRoute pero para comprobar si el usuario es administrador o no
 const AdminRoute = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
 

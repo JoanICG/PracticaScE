@@ -1,3 +1,4 @@
+// Importaciones necesarias
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { CssBaseline, ThemeProvider, createTheme, Box } from '@mui/material';
 import { AuthProvider } from './context/AuthContext';
@@ -8,14 +9,14 @@ import ProtectedRoute from './components/layout/ProtectedRoute';
 import AdminRoute from './components/layout/AdminRoute';
 import UsersPage from './pages/admin/UsersPage';
 import OrdersAdminPage from './pages/admin/OrdersAdminPage';
-import AddProductPage from './pages/admin/AddProductPage'; // Importar la página de añadir productos
+import AddProductPage from './pages/admin/AddProductPage';
 import ProductsPage from './pages/ProductsPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrdersPage from './pages/OrdersPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 
-// Crear tema
+// Parte del Material UI para cambiar el tema de l'aplicación
 const theme = createTheme({
   palette: {
     mode: 'light',
@@ -33,14 +34,16 @@ const theme = createTheme({
     },
   },
 });
-
+// funcion principal de la aplicación
 function App() {
   return (
+    // añadiendo el tema y el contexto de autenticación
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AuthProvider>
+        {/* Funcion del React-Router */}
         <Router>
-          <Header/> {/* Reemplaza Header con el nuevo menú */}
+          <Header/> {/* Fichero donde se ve el menu superior de la pagina web */}
           <Box component="main" sx={{ p: 3 }}>
             <Routes>
               {/* Rutas públicas */}
@@ -75,8 +78,8 @@ function App() {
 
 export default App;
 
-// En AuthContext.jsx, dentro del AuthProvider
+// Funcion para cerrar sesion del usuario el qual tambien elimna las cookies para una mayor seguridad
 const logout = () => {
-  clearAuthCookies(); // Asegúrate de que esta función elimine todas las cookies
+  clearAuthCookies();
   setUser(null);
 };

@@ -10,8 +10,10 @@ import {
 } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+// Este es el formulario de login
 
 const LoginForm = () => {
+  // Variables de estado para el formulario
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -31,7 +33,7 @@ const LoginForm = () => {
     }
   };
 
-  // Validar formulario
+  // Validamos todo el formulario
   const validateForm = () => {
     const errors = {};
     
@@ -49,13 +51,15 @@ const LoginForm = () => {
     return Object.keys(errors).length === 0;
   };
 
-  // Manejar envío del formulario
+  // Funcion para enviar el formulario al backend
   const handleSubmit = async (e) => {
+    // Evitamos que se recargue la pagina
     e.preventDefault();
-    
+    // Antes de enviar el formulario, validamos los datos
     if (!validateForm()) return;
     
     try {
+      // Intentamos hacer login con los datos del formulario
       const result = await login(formData);
       if (result) {
         // Navegamos a la página principal solo si el login fue exitoso
@@ -66,7 +70,7 @@ const LoginForm = () => {
       // Los errores deberían manejarse en el contexto de autenticación
     }
   };
-
+  // Formulario de login que hemos utilizado
   return (
     <Paper elevation={3} sx={{ p: 4, maxWidth: 400, mx: 'auto' }}>
       <Typography variant="h4" component="h1" gutterBottom align="center">

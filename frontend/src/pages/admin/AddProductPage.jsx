@@ -9,8 +9,10 @@ import {
   Alert,
 } from "@mui/material";
 import api from "../../services/api";
-
+// Pagina para añadir nuevos productos al backend
+// Variables de estado para la pagina de añadir productos
 const AddProductPage = () => {
+  // Añadimos al productData un array con los datos del producto
   const [productData, setProductData] = useState({
     name: "",
     description: "",
@@ -21,21 +23,26 @@ const AddProductPage = () => {
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
-
+  // Obtiene los valores ingresados en el formulario y los guarda en el estado
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProductData({ ...productData, [name]: value });
   };
-
+  // Funcion que se encarga de añadir el producto al backend
   const handleSubmit = async (e) => {
+    // Evitamos que se recargue la pagina
     e.preventDefault();
     setLoading(true);
+    /*
     setSuccessMessage(null);
-    setErrorMessage(null);
+    setErrorMessage(null);*/
 
     try {
+      // Enviamos con el post el nuevo producto al backend
       await api.post("/admin/products", productData);
+      // Menasje de exito
       setSuccessMessage("Producto añadido con éxito.");
+      // Limpiamos el formulario
       setProductData({
         name: "",
         description: "",
@@ -52,7 +59,7 @@ const AddProductPage = () => {
       setLoading(false);
     }
   };
-
+  // Formulario para añadir el producto
   return (
     <Container maxWidth="sm" sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>

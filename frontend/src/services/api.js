@@ -1,13 +1,15 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-// Instancia básica de axios
+// Instancia que utilitzaremos para hacer todas las peticiones GET i POST necessarias
+// Como podremos obervar sera utilizada en la funcion "authAPI" i "adminAPI"
 const api = axios.create({
   baseURL: 'http://localhost:4000/api',
   withCredentials: true
 });
 
-// Interceptor para añadir el token a cada petición
+// Funcion que intercepta todas las peticiones de la API e añade el token de autentificacion para
+// /verfy del backend
 api.interceptors.request.use(
   (config) => {
     const token = Cookies.get('auth_token');

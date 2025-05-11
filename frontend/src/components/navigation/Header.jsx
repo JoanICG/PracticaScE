@@ -29,7 +29,8 @@ import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-
+// Esta pagina consiste en el menu de navegacion de arriba
+// En este caso hemos intentado usar en el mayo de lo posible iconos de Material UI
 const Header = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -88,8 +89,7 @@ const Header = () => {
         >
           RC Nomad
         </Typography>
-
-        {/* Menú hamburguesa (móvil) */}
+        
         <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
           <IconButton
             size="large"

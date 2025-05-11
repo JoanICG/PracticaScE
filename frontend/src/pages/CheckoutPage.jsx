@@ -22,9 +22,10 @@ import api from '../services/api';
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import CheckoutForm from "../components/CheckoutForm";
-
+// Esta pagina se encarga de gestionar todo el processo de compra, tanto de la direccions, como la lista de los productos, como la metodologia de pago que en nuestro caso es con Stripe
+// Estos son los pasos que seguira el checkout cada vez que pulse el boton de siguiente
 const steps = ['Dirección de envío', 'Revisar pedido', 'Pago', 'Pedido completado'];
-
+// Variables d'estado sobre la pagina de checkout
 const CheckoutPage = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [cart, setCart] = useState({ orderItems: [], totalAmount: 0 });
@@ -37,22 +38,26 @@ const CheckoutPage = () => {
   const stripePromise = loadStripe("pk_test_51RMVXe4FE38O7zRrFoDEZ9JKdAdwn9I3jebSGHYr3MgyjyNuROWPyi4UxROyJoFR0PMc9OrLC3ULFJUnO3t4qbeZ006ZtZKmAm");
   const [clientSecret, setClientSecret] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-
+  // Llamamos a la API para obtener el carrito
   useEffect(() => {
     fetchCart();
   }, []);
 
   const fetchCart = async () => {
     try {
+      // Cambiamos el estado del loading a true
       setLoading(true);
+      // Pedimos al backend el carrito para poder ver sus productos el qual se mostraran por pantalla
       const response = await api.get('/cart');
+      //guardamos el carrito a la variable d'estado cart
       setCart(response.data.data.cart);
       
-      // Si el carrito está vacío, redireccionar
+      //En caso de que el usuario acceda a esta pagina sin productos en el carrito, se le redirecciona al carrito para que se de cuenta
+      // que no tiene productos
       if (response.data.data.cart.orderItems.length === 0) {
         navigate('/cart');
       }
-      
+      // Cambiamos el estado del loading a false
       setLoading(false);
     } catch (error) {
       console.error('Error al obtener carrito:', error);
@@ -60,33 +65,39 @@ const CheckoutPage = () => {
       setLoading(false);
     }
   };
-
+  // Funcio que se encarga de gestionar el siguiente paso del checkout
   const handleNext = async () => {
+    // La metodologia de pago es al cabo de pular 2 veces el boton de siguiente
+    // Asi que en el primer paso no hacemos caso a la metodologia de pago i 
     if (activeStep === 1) { // Antes de ir al paso de pago
       try {
-        // Crear intent de pago
+        // Envia solicitud al backend para crear el PaymentIntent
         const response = await api.post("/cart/create-payment-intent", {
           totalAmount: cart.totalAmount,
         });
+        // Guardamos el clientSecret que nos devuelve el backend que es la calve unica generada por Stripe
+        // para autenticar i poder realizar el pago
         setClientSecret(response.data.clientSecret);
+        // Actualizamos el siguiente paso del checkout
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
       } catch (error) {
         console.error("Error al iniciar el pago:", error);
         setError("Error al iniciar el pago");
       }
     } else {
+      // Pasamos al siguiente paso del checkout
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
     }
   };
-
+  // Funcio que se encarga de gestionar el paso anterior del checkout
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
-
+  // Funcio que se encarga de gestionar el cambio de la direccion de envio
   const handleShippingAddressChange = (e) => {
     setShippingAddress(e.target.value);
   };
-
+  /*
   const handleSubmitOrder = async () => {
     try {
       setSubmitting(true);
@@ -102,7 +113,7 @@ const CheckoutPage = () => {
     } finally {
       setSubmitting(false);
     }
-  };
+  };*/
 
   const handlePaymentSuccess = async (paymentIntentId) => {
     try {
@@ -125,9 +136,11 @@ const CheckoutPage = () => {
       setSubmitting(false);
     }
   };
-
+  // Es la funcion donde se siguen todos los pasos comentados anteriormente, cada vez que usamos 
+  // setActiveStep dependiendo del paso de la variable acabaremos a una pagina o otra
   const getStepContent = (step) => {
     switch (step) {
+      // Paso donde se pide la direccion de envio
       case 0:
         return (
           <Box sx={{ mt: 3 }}>
@@ -158,6 +171,7 @@ const CheckoutPage = () => {
             </Box>
           </Box>
         );
+      // Passo el qual nos muestra el resumen del pedido
       case 1:
         return (
           <Box sx={{ mt: 3 }}>
@@ -230,7 +244,8 @@ const CheckoutPage = () => {
             </Box>
           </Box>
         );
-      case 2: // Nuevo paso de pago
+      // Paso del Stripe para hacer el pago
+      case 2:
         return (
           <Box sx={{ mt: 3 }}>
             <Typography variant="h6" gutterBottom>
