@@ -4,31 +4,31 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 // Crear un pedido a partir del carrito
 const createOrder = async (req, res) => {
   try {
-    const { shippingAddress, paymentIntentId } = req.body;
+    const { shippingAddress, paymentIntentId, checkoutSessionId } = req.body;
     const userId = req.user.id;
+    console.log('[orders/create] inicio', { userId, hasPI: !!paymentIntentId, hasSession: !!checkoutSessionId, hasAddress: !!shippingAddress });
 
-    // Verificar datos requeridos
-    if (!shippingAddress) {
+    // Verificar el pago ya sea por PaymentIntent directo o por Session de Checkout
+    if (paymentIntentId) {
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      if (paymentIntent.status !== 'succeeded') {
+        return res.status(400).json({
+          success: false,
+          message: "El pago no ha sido completado correctamente"
+        });
+      }
+    } else if (checkoutSessionId) {
+      const session = await stripe.checkout.sessions.retrieve(checkoutSessionId);
+      if (session.payment_status !== 'paid') {
+        return res.status(400).json({
+          success: false,
+          message: "El pago no ha sido completado correctamente"
+        });
+      }
+    } else {
       return res.status(400).json({
         success: false,
-        message: "La dirección de envío es requerida"
-      });
-    }
-
-    if (!paymentIntentId) {
-      return res.status(400).json({
-        success: false,
-        message: "El ID del pago es requerido"
-      });
-    }
-
-    // Verificar el estado del pago directamente con Stripe
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-    
-    if (paymentIntent.status !== 'succeeded') {
-      return res.status(400).json({
-        success: false,
-        message: "El pago no ha sido completado correctamente"
+        message: "Falta el identificador de pago (paymentIntentId o checkoutSessionId)"
       });
     }
 
@@ -71,9 +71,9 @@ const createOrder = async (req, res) => {
 
     // Convertir carrito a pedido
     cart.status = "pending";
-    cart.shippingAddress = shippingAddress;
+    cart.shippingAddress = shippingAddress || cart.shippingAddress || null;
     await orderRepository.save(cart);
-
+    console.log('[orders/create] pedido creado', { orderId: cart.id, userId });
     return res.status(200).json({
       success: true,
       message: "Pedido creado correctamente",

@@ -1,6 +1,3 @@
-import { loadStripe } from "@stripe/stripe-js";
-import { Elements } from "@stripe/react-stripe-js";
-import CheckoutForm from "../components/CheckoutForm"; // Crearás este componente
 import { useState, useEffect } from 'react';
 import { 
   Container, 
@@ -38,7 +35,6 @@ const CartPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [updating, setUpdating] = useState(false);
-  const [clientSecret, setClientSecret] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {

@@ -4,7 +4,7 @@ import Cookies from 'js-cookie';
 // Instancia que utilitzaremos para hacer todas las peticiones GET i POST necessarias
 // Como podremos obervar sera utilizada en la funcion "authAPI" i "adminAPI"
 const api = axios.create({
-  baseURL: 'http://localhost:4000/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api',
   withCredentials: true
 });
 

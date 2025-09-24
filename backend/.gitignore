@@ -3,7 +3,7 @@ node_modules/
 package-lock.json
 
 # Environment variables
-# .env (commented out since you might want to track it for this project)
+.env 
 .env.local
 .env.development
 .env.test

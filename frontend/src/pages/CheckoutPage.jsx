@@ -19,9 +19,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { loadStripe } from "@stripe/stripe-js";
-import { Elements } from "@stripe/react-stripe-js";
-import CheckoutForm from "../components/CheckoutForm";
+// Eliminamos Stripe.js: usaremos Stripe Checkout (hosted)
 // Esta pagina se encarga de gestionar todo el processo de compra, tanto de la direccions, como la lista de los productos, como la metodologia de pago que en nuestro caso es con Stripe
 // Estos son los pasos que seguira el checkout cada vez que pulse el boton de siguiente
 const steps = ['Dirección de envío', 'Revisar pedido', 'Pago', 'Pedido completado'];
@@ -35,12 +33,33 @@ const CheckoutPage = () => {
   const [error, setError] = useState(null);
   const [orderCompleted, setOrderCompleted] = useState(false);
   const navigate = useNavigate();
-  const stripePromise = loadStripe("pk_test_51RMVXe4FE38O7zRrFoDEZ9JKdAdwn9I3jebSGHYr3MgyjyNuROWPyi4UxROyJoFR0PMc9OrLC3ULFJUnO3t4qbeZ006ZtZKmAm");
-  const [clientSecret, setClientSecret] = useState(null);
+  // Persistimos dirección para regresar desde Stripe
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   // Llamamos a la API para obtener el carrito
   useEffect(() => {
-    fetchCart();
+    const init = async () => {
+      await fetchCart();
+      // Restaurar dirección si existe en sessionStorage (volviendo de Stripe)
+      const savedAddress = sessionStorage.getItem('checkout_shipping_address');
+      if (savedAddress) setShippingAddress(savedAddress);
+
+      // Manejo de retorno desde Stripe Checkout
+      const params = new URLSearchParams(window.location.search);
+      const success = params.get('success');
+      const canceled = params.get('canceled');
+      const sessionId = params.get('session_id');
+      if (success === 'true' && sessionId) {
+        await handlePaymentSuccessCheckout(sessionId);
+        // Limpiamos query params para evitar reintentos al refrescar
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } else if (canceled === 'true') {
+        setError('Pago cancelado. Puedes intentarlo de nuevo.');
+        setActiveStep(2);
+        // Limpiar params
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    };
+    init();
   }, []);
 
   const fetchCart = async () => {
@@ -70,20 +89,8 @@ const CheckoutPage = () => {
     // La metodologia de pago es al cabo de pular 2 veces el boton de siguiente
     // Asi que en el primer paso no hacemos caso a la metodologia de pago i 
     if (activeStep === 1) { // Antes de ir al paso de pago
-      try {
-        // Envia solicitud al backend para crear el PaymentIntent
-        const response = await api.post("/cart/create-payment-intent", {
-          totalAmount: cart.totalAmount,
-        });
-        // Guardamos el clientSecret que nos devuelve el backend que es la calve unica generada por Stripe
-        // para autenticar i poder realizar el pago
-        setClientSecret(response.data.clientSecret);
-        // Actualizamos el siguiente paso del checkout
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
-      } catch (error) {
-        console.error("Error al iniciar el pago:", error);
-        setError("Error al iniciar el pago");
-      }
+      // Con Stripe Checkout hosted, pasamos directamente al paso de pago donde redirigimos
+      setActiveStep((prevActiveStep) => prevActiveStep + 1);
     } else {
       // Pasamos al siguiente paso del checkout
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -96,6 +103,8 @@ const CheckoutPage = () => {
   // Funcio que se encarga de gestionar el cambio de la direccion de envio
   const handleShippingAddressChange = (e) => {
     setShippingAddress(e.target.value);
+    // Guardar temporalmente por si salimos a Stripe y volvemos
+    sessionStorage.setItem('checkout_shipping_address', e.target.value);
   };
   /*
   const handleSubmitOrder = async () => {
@@ -136,6 +145,27 @@ const CheckoutPage = () => {
       setSubmitting(false);
     }
   };
+
+  // Nuevo: finalizar pedido al volver de Stripe Checkout
+  const handlePaymentSuccessCheckout = async (checkoutSessionId) => {
+    try {
+      setSubmitting(true);
+      setError(null);
+      await api.post('/orders/create', { 
+        shippingAddress,
+        checkoutSessionId
+      });
+      setPaymentSuccess(true);
+      setOrderCompleted(true);
+      setActiveStep(3);
+      sessionStorage.removeItem('checkout_shipping_address');
+    } catch (error) {
+      console.error('Error al crear pedido tras Checkout:', error);
+      setError(error.response?.data?.message || 'Error al procesar el pedido');
+    } finally {
+      setSubmitting(false);
+    }
+  };
   // Es la funcion donde se siguen todos los pasos comentados anteriormente, cada vez que usamos 
   // setActiveStep dependiendo del paso de la variable acabaremos a una pagina o otra
   const getStepContent = (step) => {
@@ -149,9 +179,6 @@ const CheckoutPage = () => {
             </Typography>
             <Grid container spacing={2}>
               <Grid sx={{ gridColumn: { xs: 'span 12', md: 'span 6' } }}>
-                <Typography variant="h6" gutterBottom>
-                  Dirección de envío
-                </Typography>
                 <TextField
                   required
                   id="address"
@@ -258,16 +285,37 @@ const CheckoutPage = () => {
             <Typography variant="h6" gutterBottom>
               Pago
             </Typography>
-            {clientSecret ? (
-              <Elements stripe={stripePromise} options={{ clientSecret }}>
-                <CheckoutForm 
-                  clientSecret={clientSecret} 
-                  onPaymentSuccess={handlePaymentSuccess}
-                />
-              </Elements>
-            ) : (
-              <CircularProgress />
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              Serás redirigido a Stripe para completar el pago de forma segura.
+            </Typography>
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
             )}
+            <Button
+              variant="contained"
+              color="primary"
+              disabled={submitting}
+              onClick={async () => {
+                try {
+                  setSubmitting(true);
+                  const response = await api.post('/cart/create-checkout-session', {
+                    totalAmount: cart.totalAmount
+                  });
+                  if (response.data?.url) {
+                    window.location.href = response.data.url;
+                  } else {
+                    setError('No se pudo iniciar la sesión de pago');
+                  }
+                } catch (e) {
+                  console.error('Error iniciando Checkout:', e);
+                  setError('Error al iniciar el pago');
+                } finally {
+                  setSubmitting(false);
+                }
+              }}
+            >
+              Ir a pagar
+            </Button>
             <Box sx={{ display: 'flex', justifyContent: 'flex-start', mt: 3 }}>
               <Button onClick={handleBack}>
                 Volver
