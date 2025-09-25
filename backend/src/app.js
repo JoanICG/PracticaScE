@@ -16,36 +16,33 @@ const systemRoutes = require('./routes/system.routes');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Configuración CORS con soporte para cookies
-const allowedOrigins = [
-  'http://localhost:3000', // local dev
-];
+// Configuración CORS con soporte para cookies y dominios configurables
+// Permite definir múltiples orígenes separados por coma en CORS_ALLOWED_ORIGINS
+const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS || 'http://localhost:3000')
+  .split(',')
+  .map(o => o.trim());
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Permitir peticiones sin origin (como curl o Postman)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(null, true); // en desarrollo, permite todo; ajusta en prod
+    if (!origin) return callback(null, true); // peticiones server-to-server
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    if (process.env.NODE_ENV === 'development') {
+      // En desarrollo, permitir cualquier origen para facilitar pruebas
+      return callback(null, true);
+    }
+    return callback(new Error('CORS: Origin no permitido')); // en producción, bloquear
   },
-  credentials: true
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 
-// Configuración personalizada de CORS
-app.use((request, response, next) => {
-  // Permitir desde el frontend en docker y localhost
-  const requestOrigin = request.headers.origin;
-  if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
-    response.header('Access-Control-Allow-Origin', requestOrigin);
-  } else {
-    response.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-  }
-  response.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  response.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  if (request.method === 'OPTIONS') {
-    return response.sendStatus(200);
-  }
-  next();
+// Responder rápidamente preflight OPTIONS
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  return next();
 });
 
 // Middleware para parsear cookies
