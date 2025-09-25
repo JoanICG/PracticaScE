@@ -20,30 +20,31 @@ const PORT = process.env.PORT || 4000;
 // Permite definir múltiples orígenes separados por coma en CORS_ALLOWED_ORIGINS
 const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS || 'http://localhost:3000')
   .split(',')
-  .map(o => o.trim());
+  .map(o => o.trim())
+  .filter(Boolean);
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // peticiones server-to-server
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    if (process.env.NODE_ENV === 'development') {
-      // En desarrollo, permitir cualquier origen para facilitar pruebas
-      return callback(null, true);
-    }
-    return callback(new Error('CORS: Origin no permitido')); // en producción, bloquear
-  },
-  credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
-}));
+console.log('[CORS] Allowed origins:', allowedOrigins);
 
-// Responder rápidamente preflight OPTIONS
 app.use((req, res, next) => {
-  if (req.method === 'OPTIONS') return res.sendStatus(204);
-  return next();
+  const origin = req.headers.origin;
+  if (!origin) return next();
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Vary', 'Origin');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    if (req.method === 'OPTIONS') return res.sendStatus(204);
+    return next();
+  }
+  console.warn(`[CORS] Origin denegado: ${origin}`);
+  if (req.method === 'OPTIONS') {
+    return res.status(403).end();
+  }
+  return res.status(403).json({ message: 'CORS: Origin no permitido' });
 });
+
+// Preflight adicional (redundante) ya gestionado arriba
 
 // Middleware para parsear cookies
 app.use(cookieParser());

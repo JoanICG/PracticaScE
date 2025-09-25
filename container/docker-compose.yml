@@ -34,7 +34,8 @@ services:
       # Override host to use the DB service name inside the network
       DB_HOST: db
       PORT: 4000
-      NODE_ENV: development
+      # Set production so CORS only allows explicit origins
+      NODE_ENV: production
     ports:
       - "4000:4000"
     networks:
