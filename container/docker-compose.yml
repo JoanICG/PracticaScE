@@ -10,6 +10,8 @@ services:
       POSTGRES_DB: ${DB_DATABASE:-ecommerce}
     ports:
       - "5432:5432"
+    networks:
+      - default
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
@@ -35,6 +37,8 @@ services:
       NODE_ENV: development
     ports:
       - "4000:4000"
+    networks:
+      - default
     command: >-
       sh -c "node src/scripts/create-simple-admin.js && node src/scripts/create-products.js && npm start"
     restart: unless-stopped
@@ -51,7 +55,13 @@ services:
       VITE_API_BASE_URL: http://localhost:4000/api
     ports:
       - "3000:3000"
+    networks:
+      - default
     restart: unless-stopped
 
 volumes:
   db_data:
+
+networks:
+  default:
+    name: default
